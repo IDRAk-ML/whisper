@@ -111,6 +111,7 @@ async def transcript_generator(wave,sampling_rate=16000):
     model_name = config.get('model_name','whisper')
     wave = wave / np.iinfo(np.int16).max
     if sampling_rate != 16000:
+        print('Resampling to ',sampling_rate)
         wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
 
     transcript = [[],'']
@@ -331,7 +332,7 @@ def filter_hal(txt):
 async def audio_to_numpy(file: bytes = File(...)):
     try:
         audio_np = np.frombuffer(file, dtype=np.int16)
-        transcript = await transcript_generator(wave=audio_np,sampling_rate=8000)
+        transcript = await transcript_generator(wave=audio_np,sampling_rate=16000)
         txt = filter_hal(transcript[1])
         return {"message": "Conversion successful", "transcript":txt}
     except Exception as e:
