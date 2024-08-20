@@ -33,8 +33,6 @@ app = FastAPI()
 def compress_data(data):
     return gzip.compress(data)
 suppress_low = [
-    "Thank you",
-    "Thanks for",
     "ike and ",
     "lease sub",
     "The end.",
@@ -54,11 +52,6 @@ suppress_low = [
     "ranslated by",
     "ee you next week",
     "video",
-    "See you, bye-bye.",
-    'bye',
-    'bye-bye',
-    'See you, bye-bye.',
-    '..',
     'hhhh',
     'bird',
     
@@ -71,11 +64,11 @@ config = {
     "sample_rate": 16000,
     "duration_threshold": 3,
     "vad_threshold": 0.6,
-    "model_path": "openai/whisper-small.en",
+    "model_path": "openai/whisper-large-v3",
     'mac_device': True,
     'model_name': 'whisper',
     'enable_vad': True,
-    'vad_thresold': 0.6,
+    'vad_thresold': 0.5,
 }
 asr = ASR.get_instance(config)
 
@@ -111,7 +104,6 @@ async def transcript_generator(wave,sampling_rate=16000):
     model_name = config.get('model_name','whisper')
     wave = wave / np.iinfo(np.int16).max
     if sampling_rate != 16000:
-        print('Resampling to ',sampling_rate)
         wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
 
     transcript = [[],'']
