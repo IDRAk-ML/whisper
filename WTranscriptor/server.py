@@ -323,16 +323,17 @@ def filter_hal(txt):
     return txt 
 
 def check_am(file_audio):
-    '''
-    send the file data to server
-    '''
-    files = {'file': ('audio.raw', file_audio, 'application/octet-stream')}
-    url = 'http://127.0.0.1:3334/compare_audio'
-    response = requests.post(url, files=files)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return response.text
+    # '''
+    # send the file data to server
+    # '''
+    # files = {'file': ('audio.raw', file_audio, 'application/octet-stream')}
+    # url = 'http://127.0.0.1:3334/compare_audio'
+    # response = requests.post(url, files=files)
+    # if response.status_code == 200:
+    #     return response.json()
+    # else:
+    #     return response.text
+    return ''
     
 @app.post("/transcribe_array")
 async def audio_to_numpy(file: bytes = File(...)):
