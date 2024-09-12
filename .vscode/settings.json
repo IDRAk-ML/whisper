@@ -1,3 +1,5 @@
 {
-    "python.pythonPath": "/home/chandankumar/anaconda3/envs/nayatel-demo2/bin/python"
+    "python.pythonPath": "/home/chandankumar/anaconda3/envs/nayatel-demo2/bin/python",
+    "pieces.cloudCapabilities": "Blended",
+    "pieces.telemetry": true
 }

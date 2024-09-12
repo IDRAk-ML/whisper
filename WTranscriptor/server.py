@@ -18,8 +18,8 @@ from utils.utils import *
 import random
 import string
 import librosa
-
-
+import soundfile as sf
+import requests
 class AudioInput(BaseModel):
     audio_bytes_str: str
 
@@ -105,6 +105,8 @@ async def transcript_generator(wave,sampling_rate=16000):
     wave = wave / np.iinfo(np.int16).max
     if sampling_rate != 16000:
         wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
+
+
 
     transcript = [[],'']
     if model_name == 'whisper':
@@ -320,13 +322,26 @@ def filter_hal(txt):
                 return ''
     return txt 
 
+def check_am(file_audio):
+    '''
+    send the file data to server
+    '''
+    files = {'file': ('audio.raw', file_audio, 'application/octet-stream')}
+    url = 'http://127.0.0.1:3334/compare_audio'
+    response = requests.post(url, files=files)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return response.text
+    
 @app.post("/transcribe_array")
 async def audio_to_numpy(file: bytes = File(...)):
     try:
+        am_result = check_am(file)
         audio_np = np.frombuffer(file, dtype=np.int16)
         transcript = await transcript_generator(wave=audio_np,sampling_rate=16000)
         txt = filter_hal(transcript[1])
-        return {"message": "Conversion successful", "transcript":txt}
+        return {"message": "Conversion successful", "transcript":txt,'am_result':am_result}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 from websockets.exceptions import ConnectionClosedOK
