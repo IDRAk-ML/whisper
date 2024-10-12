@@ -153,3 +153,4 @@ nltk
 setfit
 langchain
 langchain-groq
+word2number
