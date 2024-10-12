@@ -17,7 +17,7 @@ Faster Implementation of Whisper
 
 vad_model, utils = torch.hub.load('snakers4/silero-vad',
                               model='silero_vad',
-                              force_reload=False)
+                              force_reload=True)
 
 
 (get_speech_timestamps,
