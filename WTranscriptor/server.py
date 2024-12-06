@@ -11,7 +11,7 @@ from fastapi.responses import HTMLResponse
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException,File
 from fastapi.responses import HTMLResponse, JSONResponse
 import numpy as np
-from WTranscriptor.WASR import ASR
+from WASR import ASR
 from pydantic import BaseModel
 import numpy as np
 from utils.utils import *
