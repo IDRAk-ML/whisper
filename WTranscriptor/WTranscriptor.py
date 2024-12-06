@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import soundfile as sf
-from WTranscriptor.WASR import ASR
+from WASR import ASR
 import enums
 import sounddevice as sd
 import math
