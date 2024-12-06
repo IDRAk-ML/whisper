@@ -59,17 +59,7 @@ suppress_low = [
 
     
 ]
-# Configuration for ASR
-config = {
-    "sample_rate": 16000,
-    "duration_threshold": 3,
-    "vad_threshold": 0.6,
-    "model_path": "openai/whisper-large-v3",
-    'mac_device': True,
-    'model_name': 'whisper',
-    'enable_vad': True,
-    'vad_thresold': 0.5,
-}
+from config import config
 asr = ASR.get_instance(config)
 
 
