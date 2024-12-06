@@ -132,6 +132,7 @@ class WhisperTranscriptorAPI:
             else:
                 pass
             t1 = timeit.default_timer()
+
             outputs = self.model(
                 wave,
             chunk_length_s=15,
