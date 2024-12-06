@@ -1,4 +1,4 @@
-from ali_silero_asr.src.utils import *
+from sil_asr.src.utils import *
 import warnings
 import torch
 torch._C._jit_set_bailout_depth(0)

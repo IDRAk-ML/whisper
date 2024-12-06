@@ -7,7 +7,7 @@ import websockets
 import concurrent.futures
 import logging
 import numpy as np
-from WhisperASR import ASR
+from WTranscriptor.WASR import ASR
 from utils.utils import *
 import random 
 import string

@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import soundfile as sf
-from WhisperASR import ASR
+from WTranscriptor.WASR import ASR
 import enums
 
 #------------------- For Voice Activity Detection Model Loading --------------

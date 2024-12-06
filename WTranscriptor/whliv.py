@@ -11,7 +11,7 @@ from queue import Queue
 from tempfile import NamedTemporaryFile
 from time import sleep
 from sys import platform
-from whisper2 import WhisperTranscriptorAPI
+from WTranscriptor.w2as import WhisperTranscriptorAPI
 
 def main():
     parser = argparse.ArgumentParser()
