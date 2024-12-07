@@ -7,7 +7,7 @@ import os
 import zlib
 from typing import Optional,Dict,List,Collection
 warnings.filterwarnings('ignore')
-from utils.utils import *
+from WTranscriptor.utils.utils import *
 '''
 Faster Implementation of Whisper
 '''
