@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 # from whisper2 import WhisperTranscriptorAPI 
-from Singlton import SingletonMeta
+from WTranscriptor.Singlton import SingletonMeta
 # from silero1 import SileroTranscriptorAPI
 import warnings
 warnings.filterwarnings('ignore')
