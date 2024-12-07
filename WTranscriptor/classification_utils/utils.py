@@ -1,4 +1,4 @@
-from classification_utils.path_config import *
+from WTranscriptor.classification_utils.path_config import *
 import sys
 
 if not server_classifier:
