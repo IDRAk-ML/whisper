@@ -13,6 +13,7 @@ Faster Implementation of Whisper
 '''
 
 # torch.set_num_threads(8)
+from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
 
 
 class WhisperTranscriptorAPI:
@@ -46,6 +47,7 @@ class WhisperTranscriptorAPI:
         self.vad_thresold = vad_thresold
         self.batch_size = batch_size
         self.detect_language = detect_language
+        self.processor = AutoProcessor.from_pretrained(self.model_path)
         # print(self.model_path)
         # device='cpu'
         # compute_type="int8"
@@ -69,6 +71,8 @@ class WhisperTranscriptorAPI:
                     "automatic-speech-recognition",
                     model=self.model_path,
                     torch_dtype=torch.float16,
+                    feature_extractor=self.processor.feature_extractor,
+                    tokenizer=self.processor.tokenizer,
                     device="mps" if mac_device else f"cuda:{cuda_device_id}",
                     model_kwargs={"attn_implementation": "flash_attention_2"} if en_flash_attention else {"attn_implementation": "sdpa"},
                         )
@@ -77,14 +81,18 @@ class WhisperTranscriptorAPI:
                     self.model = pipeline(
                     "automatic-speech-recognition",
                     model=self.model_path,
+                    feature_extractor=self.processor.feature_extractor,
                     torch_dtype=torch.float16,
+                    tokenizer=self.processor.tokenizer,
                     device=device)
             else:
                     print("[INFO] Loading on CPU")
                     self.model = pipeline(
                     "automatic-speech-recognition",
                     model=self.model_path,
+                    feature_extractor=self.processor.feature_extractor,
                     torch_dtype=torch.float16,
+                    tokenizer=self.processor.tokenizer, 
                     device=device)
         self.OUTPUT_DIR= "audios"
         self.vad_model, self.utils = torch.hub.load('snakers4/silero-vad',
@@ -112,11 +120,11 @@ class WhisperTranscriptorAPI:
 
         if self.mac_device:
             torch.mps.empty_cache()
-        generate_kwargs = {"task": 'transcribe', "language": 'en'}
+        generate_kwargs = {"task": 'transcribe', "language": 'en',"forced_decoder_ids": self.processor.get_decoder_prompt_ids(language="en")}
         if self.model_path.split(".")[-1] == "en":
             generate_kwargs.pop("task")
             generate_kwargs.pop("language") 
-         
+            
         t1 = timeit.default_timer()
         if enable_vad:
             wave = torch.from_numpy(wave).to(device=self.device).float()
