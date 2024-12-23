@@ -115,9 +115,9 @@ class WhisperTranscriptorAPI:
 
         if self.mac_device:
             torch.mps.empty_cache()
-        generate_kwargs = {"task": 'transcribe', "language": 'en',"forced_decoder_ids": self.processor.get_decoder_prompt_ids(language="en")}
+        generate_kwargs = {"language": 'en',"forced_decoder_ids": self.processor.get_decoder_prompt_ids(language="en")}
         if self.model_path.split(".")[-1] == "en":
-            generate_kwargs.pop("task")
+            # generate_kwargs.pop("task")
             generate_kwargs.pop("language") 
          
         t1 = timeit.default_timer()
