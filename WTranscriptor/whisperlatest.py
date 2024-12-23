@@ -60,7 +60,7 @@ class WhisperTranscriptorAPI:
             low_cpu_mem_usage=True,
             use_safetensors=True
         )
-        device="mps" if mac_device else f"cuda:{cuda_device_id}"
+        device="mps" if mac_device else f"cuda:0"
         self._model.to(device)
 
         if mac_device:
