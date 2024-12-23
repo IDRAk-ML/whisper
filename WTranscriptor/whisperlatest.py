@@ -71,8 +71,6 @@ class WhisperTranscriptorAPI:
                     "automatic-speech-recognition",
                     model=self.model_path,
                     torch_dtype=torch.float16,
-                    feature_extractor=self.processor.feature_extractor,
-                    tokenizer=self.processor.tokenizer,
                     device="mps" if mac_device else f"cuda:{cuda_device_id}",
                     model_kwargs={"attn_implementation": "flash_attention_2"} if en_flash_attention else {"attn_implementation": "sdpa"},
                         )
@@ -81,18 +79,15 @@ class WhisperTranscriptorAPI:
                     self.model = pipeline(
                     "automatic-speech-recognition",
                     model=self.model_path,
-                    feature_extractor=self.processor.feature_extractor,
                     torch_dtype=torch.float16,
-                    tokenizer=self.processor.tokenizer,
                     device=device)
             else:
                     print("[INFO] Loading on CPU")
                     self.model = pipeline(
                     "automatic-speech-recognition",
                     model=self.model_path,
-                    feature_extractor=self.processor.feature_extractor,
+
                     torch_dtype=torch.float16,
-                    tokenizer=self.processor.tokenizer, 
                     device=device)
         self.OUTPUT_DIR= "audios"
         self.vad_model, self.utils = torch.hub.load('snakers4/silero-vad',
