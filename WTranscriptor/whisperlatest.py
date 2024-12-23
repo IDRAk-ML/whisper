@@ -54,41 +54,58 @@ class WhisperTranscriptorAPI:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.device = device
         print(device == "cuda" , "cuda check")
+        self._model = AutoModelForSpeechSeq2Seq.from_pretrained(
+            self.model_path,
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=True,
+            use_safetensors=True
+        )
+        device="mps" if mac_device else f"cuda:{cuda_device_id}"
+        self._model.to(device)
+
         if mac_device:
             print(f"[INFO] Loading on Mac Device")
             self.model = pipeline(
-                    "automatic-speech-recognition",
-                    model=self.model_path,
-                    torch_dtype=torch.float16,
-                    device="mps" if mac_device else f"cuda:{cuda_device_id}",
-                )
+                "automatic-speech-recognition",
+                model=self._model,
+                tokenizer=self.processor.tokenizer,
+                feature_extractor=self.processor.feature_extractor,
+                torch_dtype=torch.float16,
+                device=device
+            )
         else:
             if device == 'cuda':
                 cuda_device_id = 0
                 print(f"[INFO] Loading {self.model_path} on Cuda")
                 try:
                     self.model = pipeline(
-                    "automatic-speech-recognition",
-                    model=self.model_path,
-                    torch_dtype=torch.float16,
-                    device="mps" if mac_device else f"cuda:{cuda_device_id}",
-                    model_kwargs={"attn_implementation": "flash_attention_2"} if en_flash_attention else {"attn_implementation": "sdpa"},
-                        )
+                "automatic-speech-recognition",
+                model=self._model,
+                tokenizer=self.processor.tokenizer,
+                feature_extractor=self.processor.feature_extractor,
+                torch_dtype=torch.float16,
+                device=device
+            )
                 except ValueError:
                     print("[INFO] Cuda Support Issue Moving to CPU")
                     self.model = pipeline(
-                    "automatic-speech-recognition",
-                    model=self.model_path,
-                    torch_dtype=torch.float16,
-                    device=device)
+                "automatic-speech-recognition",
+                model=self._model,
+                tokenizer=self.processor.tokenizer,
+                feature_extractor=self.processor.feature_extractor,
+                torch_dtype=torch.float16,
+                device=device
+            )
             else:
                     print("[INFO] Loading on CPU")
                     self.model = pipeline(
-                    "automatic-speech-recognition",
-                    model=self.model_path,
-
-                    torch_dtype=torch.float16,
-                    device=device)
+                "automatic-speech-recognition",
+                model=self._model,
+                tokenizer=self.processor.tokenizer,
+                feature_extractor=self.processor.feature_extractor,
+                torch_dtype=torch.float16,
+                device=device
+            )
         self.OUTPUT_DIR= "audios"
         self.vad_model, self.utils = torch.hub.load('snakers4/silero-vad',
                               model='silero_vad',
