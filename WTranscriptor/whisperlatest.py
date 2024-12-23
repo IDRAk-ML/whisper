@@ -41,7 +41,7 @@ class WhisperTranscriptorAPI:
           model_path: the huggingface repo of whisper-model. 
           ... i.e. for example: openai/whisper-tiny.en 
         '''
-        self.processor = AutoProcessor.from_pretrained(self.model_path)
+        
 
         self.mac_device = mac_device
         self.model_path = model_path
@@ -51,6 +51,7 @@ class WhisperTranscriptorAPI:
         # print(self.model_path)
         # device='cpu'
         # compute_type="int8"
+        self.processor = AutoProcessor.from_pretrained(self.model_path)
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.device = device
         print(device == "cuda" , "cuda check")
