@@ -1,4 +1,4 @@
-from transformers import pipeline,WhisperProcessor, WhisperForConditionalGeneration,WhisperTokenizer
+from transformers import pipeline,WhisperProcessor, WhisperForConditionalGeneration,WhisperTokenizer,AutoProcessor
 import torch
 import timeit
 import numpy as np
@@ -41,6 +41,8 @@ class WhisperTranscriptorAPI:
           model_path: the huggingface repo of whisper-model. 
           ... i.e. for example: openai/whisper-tiny.en 
         '''
+        self.processor = AutoProcessor.from_pretrained(self.model_path)
+
         self.mac_device = mac_device
         self.model_path = model_path
         self.vad_thresold = vad_thresold
@@ -112,7 +114,7 @@ class WhisperTranscriptorAPI:
 
         if self.mac_device:
             torch.mps.empty_cache()
-        generate_kwargs = {"task": 'transcribe', "language": 'en'}
+        generate_kwargs = {"task": 'transcribe', "language": 'en',"forced_decoder_ids": self.processor.get_decoder_prompt_ids(language="en")}
         if self.model_path.split(".")[-1] == "en":
             generate_kwargs.pop("task")
             generate_kwargs.pop("language") 
