@@ -8,6 +8,7 @@ import zlib
 from typing import Optional,Dict,List,Collection
 warnings.filterwarnings('ignore')
 from WTranscriptor.utils.utils import *
+from transformers import WhisperProcessor
 '''
 Faster Implementation of Whisper
 '''
@@ -51,9 +52,19 @@ class WhisperTranscriptorAPI:
         # print(self.model_path)
         # device='cpu'
         # compute_type="int8"
-        self.processor = AutoProcessor.from_pretrained(self.model_path)
+        self.processor = WhisperProcessor.from_pretrained(
+                self.model_path,
+                language="ur",
+                task="transcribe"
+            )
+        
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        
         self.device = device
+
+        # self.model_ = WhisperForConditionalGeneration.from_pretrained(self.model_path)
+        # self.model_.generation_config.language = "<|ur|>"  # Language token for Urdu
+        # self.model_.generation_config.task = "transcribe"  # Task token for transcription
         print(device == "cuda" , "cuda check")
         if mac_device:
             print(f"[INFO] Loading on Mac Device")
@@ -115,10 +126,10 @@ class WhisperTranscriptorAPI:
 
         if self.mac_device:
             torch.mps.empty_cache()
-        generate_kwargs = {"task": 'transcribe', "language": '<|en|>'}
+        generate_kwargs = {"task": 'transcribe', "language": '<|ur|>'}
         if self.model_path.split(".")[-1] == "en":
             generate_kwargs.pop("task")
-            generate_kwargs.pop("language") 
+            generate_kwargs.pop("language")
          
         t1 = timeit.default_timer()
         if enable_vad:
