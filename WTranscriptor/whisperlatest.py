@@ -173,7 +173,7 @@ class WhisperTranscriptorAPI:
         
         # Create an in-memory buffer for the audio data
         
-        print(audio_data)
+        
         # Transcribe the audio
         outputs = self.model(
             audio_data,
@@ -184,7 +184,7 @@ class WhisperTranscriptorAPI:
 
         # Combine all segments
         text = outputs['text']
-        print(text)
+        
         processing_time = time.time() - start_time
         
 

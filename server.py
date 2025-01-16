@@ -399,8 +399,9 @@ async def transcribe_audio(
     Endpoint to transcribe audio files.
     Accepts WAV files and returns transcription results.
     """
-    
-    
+
+
+    print('Transcribed Call') 
     contents = await audio_file.read()
     audio_array, sampling_rate = sf.read(contents, dtype='int16') 
     response = await transcript_generator(wave=audio_array,language=language,file_mode=True)
