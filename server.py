@@ -402,7 +402,7 @@ async def transcribe_audio(
     
     try:
         contents = await audio_file.read()
-        response = await transcript_generator(wave=contents,language=language)
+        response = await transcript_generator(wave=contents,language=language,file_mode=True)
         print('response')
         return response
     except Exception as e:
