@@ -170,30 +170,29 @@ class WhisperTranscriptorAPI:
 
     async def transcribe_file(self, audio_data, language: str = "en") -> TranscriptionResponse:
         start_time = time.time()
-        try:
-            # Create an in-memory buffer for the audio data
-            
-            
-            # Transcribe the audio
-            outputs = self.model(
-                audio_data,
-                chunk_length_s=15,
-            batch_size=self.batch_size,
-            return_timestamps=False,
-            )
+        
+        # Create an in-memory buffer for the audio data
+        
+        print(audio_data)
+        # Transcribe the audio
+        outputs = self.model(
+            audio_data,
+            chunk_length_s=15,
+        batch_size=self.batch_size,
+        return_timestamps=False,
+        )
 
-            # Combine all segments
-            text = outputs['text']
+        # Combine all segments
+        text = outputs['text']
+        print(text)
+        processing_time = time.time() - start_time
+        
 
-            processing_time = time.time() - start_time
-            
+        return TranscriptionResponse(
+            text=text,
+            language=language,
+            duration=1.2,
+            processing_time=processing_time
+        )
 
-            return TranscriptionResponse(
-                text=text,
-                language=language,
-                duration=1.2,
-                processing_time=processing_time
-            )
-
-        except Exception as e:
-            raise
+        

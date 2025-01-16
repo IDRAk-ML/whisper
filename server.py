@@ -400,13 +400,10 @@ async def transcribe_audio(
     Accepts WAV files and returns transcription results.
     """
     
-    try:
-        contents = await audio_file.read()
-        audio_array, sampling_rate = sf.read(contents, dtype='int16') 
-        response = await transcript_generator(wave=audio_array,language=language,file_mode=True)
-        print('response')
-        return response
-    except Exception as e:
-        print('Error',e)
-        raise
+    
+    contents = await audio_file.read()
+    audio_array, sampling_rate = sf.read(contents, dtype='int16') 
+    response = await transcript_generator(wave=audio_array,language=language,file_mode=True)
+    print('response')
+    return response
 
