@@ -11,6 +11,7 @@ from WTranscriptor.utils.utils import *
 from pydantic import BaseModel
 import io
 import time
+import soundfile as sf
 '''
 Faster Implementation of Whisper
 '''
@@ -171,12 +172,14 @@ class WhisperTranscriptorAPI:
         start_time = time.time()
         try:
             # Create an in-memory buffer for the audio data
-            io_buffer = io.BytesIO(audio_data)
             
+            audio_array, sampling_rate = sf.read(audio_data, dtype='int16')
             # Transcribe the audio
-            outputs = self.transcribe(
-                io_buffer,
-                beam_size=self.beam_size,
+            outputs = self.model(
+                audio_array,
+                chunk_length_s=15,
+            batch_size=self.batch_size,
+            return_timestamps=False,
             )
 
             # Combine all segments
