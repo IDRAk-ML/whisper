@@ -89,7 +89,7 @@ async def transcript_generator(wave,sampling_rate=16000,file_mode=False,language
             transcript = await asr.get_transcript_from_file(file_name=file_name)
         return transcript
     else:
-        transcript = await asr.get_transcript_from_file(wave,language=language)
+        transcript = await asr.transcribe_file(wave,language=language)
         return transcript
 
 
