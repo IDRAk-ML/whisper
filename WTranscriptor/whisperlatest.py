@@ -168,15 +168,15 @@ class WhisperTranscriptorAPI:
         return 'method not implemented; for whisper use generate_transcript_numpy', []
 
 
-    async def transcribe_file(self, audio_data: bytes, language: str = "en") -> TranscriptionResponse:
+    async def transcribe_file(self, audio_data, language: str = "en") -> TranscriptionResponse:
         start_time = time.time()
         try:
             # Create an in-memory buffer for the audio data
             
-            audio_array, sampling_rate = sf.read(audio_data, dtype='int16')
+            
             # Transcribe the audio
             outputs = self.model(
-                audio_array,
+                audio_data,
                 chunk_length_s=15,
             batch_size=self.batch_size,
             return_timestamps=False,

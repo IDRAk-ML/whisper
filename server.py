@@ -402,7 +402,8 @@ async def transcribe_audio(
     
     try:
         contents = await audio_file.read()
-        response = await transcript_generator(wave=contents,language=language,file_mode=True)
+        audio_array, sampling_rate = sf.read(contents, dtype='int16') 
+        response = await transcript_generator(wave=audio_array,language=language,file_mode=True)
         print('response')
         return response
     except Exception as e:
