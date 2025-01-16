@@ -59,6 +59,7 @@ class ASR(object):
         return ids,transcript
     
     async def transcribe_file(self,audio_data,language):
+        print('Inside Transcribe File')
         resp = await self.model.transcribe_file(audio_data,language)
         #ids are model generated tokens id for the ASR
         return resp
