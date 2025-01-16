@@ -8,11 +8,23 @@ import zlib
 from typing import Optional,Dict,List,Collection
 warnings.filterwarnings('ignore')
 from WTranscriptor.utils.utils import *
+from pydantic import BaseModel
+import io
+import time
 '''
 Faster Implementation of Whisper
 '''
 
 # torch.set_num_threads(8)
+
+
+class TranscriptionResponse(BaseModel):
+    text: str
+    language: str
+    duration: float
+    processing_time: float
+
+
 
 
 class WhisperTranscriptorAPI:
@@ -153,3 +165,32 @@ class WhisperTranscriptorAPI:
             return "",[]
     async def genereate_transcript_from_file(self, file_name):
         return 'method not implemented; for whisper use generate_transcript_numpy', []
+
+
+    async def transcribe_file(self, audio_data: bytes, language: str = "en") -> TranscriptionResponse:
+        start_time = time.time()
+        try:
+            # Create an in-memory buffer for the audio data
+            io_buffer = io.BytesIO(audio_data)
+            
+            # Transcribe the audio
+            outputs = self.transcribe(
+                io_buffer,
+                beam_size=self.beam_size,
+            )
+
+            # Combine all segments
+            text = outputs['text']
+
+            processing_time = time.time() - start_time
+            
+
+            return TranscriptionResponse(
+                text=text,
+                language=language,
+                duration=1.2,
+                processing_time=processing_time
+            )
+
+        except Exception as e:
+            raise

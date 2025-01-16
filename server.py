@@ -23,9 +23,10 @@ import requests
 from config import config
 import gzip
 from WTranscriptor.classification_utils.utils import *
-
+from fastapi import FastAPI, UploadFile, File
 from hallucination_filters import suppress_low
 
+from typing import Optional
 
 class AudioInput(BaseModel):
     audio_bytes_str: str
@@ -70,24 +71,29 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-async def transcript_generator(wave,sampling_rate=16000):
-    model_name = config.get('model_name','whisper')
-    wave = wave / np.iinfo(np.int16).max
-    if sampling_rate != 16000:
-        wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
+async def transcript_generator(wave,sampling_rate=16000,file_mode=False,language='en'):
+
+    if not file_mode:
+        model_name = config.get('model_name','whisper')
+        wave = wave / np.iinfo(np.int16).max
+        if sampling_rate != 16000:
+            wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
 
 
 
-    transcript = [[],'']
-    if model_name == 'whisper':
-        transcript = await asr.get_transcript(wave,sample_rate=sampling_rate,enable_vad=config['enable_vad'])
+        transcript = [[],'']
+        if model_name == 'whisper':
+            transcript = await asr.get_transcript(wave,sample_rate=sampling_rate,enable_vad=config['enable_vad'])
+        else:
+            file_name = save_wav_sync(wave)
+            transcript = await asr.get_transcript_from_file(file_name=file_name)
+        return transcript
     else:
-        file_name = save_wav_sync(wave)
-        transcript = await asr.get_transcript_from_file(file_name=file_name)
-    return transcript
+        transcript = await asr.get_transcript_from_file(wave,language=language)
+        return transcript
 
 
-@app.websocket("/transcribe")
+@app.websocket("/transcribe1")
 async def websocket_endpoint_transcription(websocket: WebSocket):
     await manager.connect(websocket)
     audio_buffer = bytearray()  # Use bytearray to accumulate binary data
@@ -377,3 +383,29 @@ async def websocket_persistent_endpoint(websocket: WebSocket):
         print(f"Error: {e}")
     finally:
         await websocket.close()  # Make sure the WebSocket is closed properly.
+
+class TranscriptionResponse(BaseModel):
+    text: str
+    language: str
+    duration: float
+    processing_time: float
+
+@app.post("/transcribe", response_model=TranscriptionResponse)
+async def transcribe_audio(
+    audio_file: UploadFile = File(...),
+    language: Optional[str] = "en"
+):
+    """
+    Endpoint to transcribe audio files.
+    Accepts WAV files and returns transcription results.
+    """
+    
+    try:
+        contents = await audio_file.read()
+        response = await transcript_generator(wave=contents,language=language)
+        print('response')
+        return response
+    except Exception as e:
+        print('Error',e)
+        raise
+

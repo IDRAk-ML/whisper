@@ -58,10 +58,10 @@ class ASR(object):
         #ids are model generated tokens id for the ASR
         return ids,transcript
     
-    async def get_transcript_from_file(self,file_name):
-        transcript,ids = await self.model.genereate_transcript_from_file(file_name)
+    async def get_transcript_from_file(self,audio_data,language):
+        resp = await self.model.transcribe_file(audio_data,language)
         #ids are model generated tokens id for the ASR
-        return ids,transcript
+        return resp
 
 if __name__ == "__main__":
     config = dict()
