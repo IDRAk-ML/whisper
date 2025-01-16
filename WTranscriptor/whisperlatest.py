@@ -168,7 +168,7 @@ class WhisperTranscriptorAPI:
         return 'method not implemented; for whisper use generate_transcript_numpy', []
 
 
-    async def transcribe_file(self, audio_data, language: str = "en") -> TranscriptionResponse:
+    async def transcribe(self, audio_data, language: str = "en") -> TranscriptionResponse:
         start_time = time.time()
         
         # Create an in-memory buffer for the audio data
@@ -181,7 +181,7 @@ class WhisperTranscriptorAPI:
         batch_size=self.batch_size,
         return_timestamps=False,
         )
-        
+
         # Combine all segments
         text = outputs['text']
         
