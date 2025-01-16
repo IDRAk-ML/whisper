@@ -2,7 +2,7 @@
 from typing import List
 import json
 import timeit
-from classification_utils.path_config import *
+from WTranscriptor.classification_utils.path_config import *
 import sys
 sys.path.append(CLASSIFIER_MODULE_PATH)
 # External Libraries
@@ -11,65 +11,36 @@ from fastapi.responses import HTMLResponse
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException,File
 from fastapi.responses import HTMLResponse, JSONResponse
 import numpy as np
-from WhisperASR import ASR
+from WTranscriptor.WhisperASR import ASR
 from pydantic import BaseModel
 import numpy as np
-from utils.utils import *
+from WTranscriptor.utils.utils import *
 import random
 import string
 import librosa
 import soundfile as sf
 import requests
+from config import config
+import gzip
+from WTranscriptor.classification_utils.utils import *
+from fastapi import FastAPI, UploadFile, File
+from hallucination_filters import suppress_low
+
+from typing import Optional
+
 class AudioInput(BaseModel):
     audio_bytes_str: str
 
 
-import gzip
-from classification_utils.utils import *
+
 # Initialize FastAPI app
 app = FastAPI()
 
 
 def compress_data(data):
     return gzip.compress(data)
-suppress_low = [
-    "ike and ",
-    "lease sub",
-    "The end.",
-    "ubscribe",
-    "my channel",
-    "the channel",
-    "our channel",
-    "ollow me on",
-    "for watching",
-    "hank you for watching",
-    "for your viewing",
-    "r viewing",
-    "Amara",
-    "next video",
-    "full video",
-    "ranslation by",
-    "ranslated by",
-    "ee you next week",
-    "video",
-    'hhhh',
-    'bird',
-    
 
 
-    
-]
-# Configuration for ASR
-config = {
-    "sample_rate": 16000,
-    "duration_threshold": 3,
-    "vad_threshold": 0.6,
-    "model_path": "openai/whisper-large-v3",
-    'mac_device': True,
-    'model_name': 'whisper',
-    'enable_vad': True,
-    'vad_thresold': 0.5,
-}
 asr = ASR.get_instance(config)
 
 
@@ -100,24 +71,29 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-async def transcript_generator(wave,sampling_rate=16000):
-    model_name = config.get('model_name','whisper')
-    wave = wave / np.iinfo(np.int16).max
-    if sampling_rate != 16000:
-        wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
+async def transcript_generator(wave,sampling_rate=16000,file_mode=False,language='en'):
+
+    if not file_mode:
+        model_name = config.get('model_name','whisper')
+        wave = wave / np.iinfo(np.int16).max
+        if sampling_rate != 16000:
+            wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
 
 
 
-    transcript = [[],'']
-    if model_name == 'whisper':
-        transcript = await asr.get_transcript(wave,sample_rate=sampling_rate,enable_vad=config['enable_vad'])
+        transcript = [[],'']
+        if model_name == 'whisper':
+            transcript = await asr.get_transcript(wave,sample_rate=sampling_rate,enable_vad=config['enable_vad'])
+        else:
+            file_name = save_wav_sync(wave)
+            transcript = await asr.get_transcript_from_file(file_name=file_name)
+        return transcript
     else:
-        file_name = save_wav_sync(wave)
-        transcript = await asr.get_transcript_from_file(file_name=file_name)
-    return transcript
+        transcript = await asr.transcribe_file(wave,language=language)
+        return transcript
 
 
-@app.websocket("/transcribe")
+@app.websocket("/transcribe1")
 async def websocket_endpoint_transcription(websocket: WebSocket):
     await manager.connect(websocket)
     audio_buffer = bytearray()  # Use bytearray to accumulate binary data
@@ -407,3 +383,27 @@ async def websocket_persistent_endpoint(websocket: WebSocket):
         print(f"Error: {e}")
     finally:
         await websocket.close()  # Make sure the WebSocket is closed properly.
+
+class TranscriptionResponse(BaseModel):
+    text: str
+    language: str
+    duration: float
+    processing_time: float
+
+@app.post("/transcribe", response_model=TranscriptionResponse)
+async def transcribe_audio(
+    audio_file: UploadFile = File(...),
+    language: Optional[str] = "en"
+):
+    """
+    Endpoint to transcribe audio files.
+    Accepts WAV files and returns transcription results.
+    """
+    print('Transcribed Call') 
+    contents = await audio_file.read()
+    audio_array, sampling_rate = sf.read(contents, dtype='int16') 
+    print('audio array',audio_array)
+    response = await transcript_generator(wave=audio_array,language=language,file_mode=True)
+    print('response')
+    return response
+
