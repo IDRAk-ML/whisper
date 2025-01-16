@@ -146,7 +146,7 @@ async def transcribe_audio(
     Accepts WAV files and returns transcription results.
     """
     print('Transcribed Call') 
-    # contents = await audio_file.read()
+    contents = await audio_file.read()
     # audio_array, sampling_rate = sf.read(contents, dtype='int16') 
     
     # response = await asr.transcribe_file(audio_array,language=language)
