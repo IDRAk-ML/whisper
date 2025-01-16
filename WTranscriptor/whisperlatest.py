@@ -181,7 +181,7 @@ class WhisperTranscriptorAPI:
         batch_size=self.batch_size,
         return_timestamps=False,
         )
-
+        
         # Combine all segments
         text = outputs['text']
         
