@@ -35,7 +35,7 @@ class ASR(object):
         self.mac_device = config.get('mac_device',False)
         print("[INFO] Loading Models")
         model_name = config.get('model_name','whisper')
-        vad_thresold = config.get('vad_thresold',0.6)
+        vad_thresold = config.get('vad_thresold',0.4)
         if model_name == 'whisper':
             from WTranscriptor.whisperlatest import WhisperTranscriptorAPI 
             self.model = WhisperTranscriptorAPI(model_path=self.model_path,mac_device=False,vad_thresold=vad_thresold)

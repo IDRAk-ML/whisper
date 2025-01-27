@@ -43,7 +43,7 @@ class WhisperTranscriptorAPI:
 
     def __init__(self,model_path='',file_processing=False,word_timestamp=True,mac_device=False,
                  dtype = torch.float16,en_flash_attention = False,batch_size=128,
-                 vad_model = None,vad_thresold = 0.6,detect_language = True):
+                 vad_model = None,vad_thresold = 0.4,detect_language = True):
 
         '''
         1) Defining processor for processing audio input for Whisper and
