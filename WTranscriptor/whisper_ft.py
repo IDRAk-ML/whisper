@@ -142,7 +142,7 @@ class WhisperTranscriptorAPI:
             segments, info = self.model.transcribe(
                                 wave,
                                 beam_size=5,
-                            language="ur",
+                            language="en",
                                 )
             text = ""
             for segment in segments:
