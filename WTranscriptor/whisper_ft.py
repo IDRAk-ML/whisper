@@ -156,14 +156,12 @@ class WhisperTranscriptorAPI:
                 wave1 = self.collect_chunks(speech_timestamps, wave)
                 # print(wave1)
                 wave = wave1.cpu().numpy()
-
-
             else:
                 pass
             mp3_path = save_wave_as_mp3(wave)
             t1 = timeit.default_timer()
 
-            segments, info = self.model(
+            segments, info = self.model.transcribe(
                                 mp3_path,
                             batch_size=self.batch_size,language="ur",
                                 )
