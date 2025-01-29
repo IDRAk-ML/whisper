@@ -12,12 +12,43 @@ from pydub import AudioSegment
 '''
 Faster Implementation of Whisper
 '''
-
+import tempfile
 import random
 import string
 
 
+def generate_random_filename(extension="mp3", length=10):
+    random_name = ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
+    return f"{random_name}.{extension}"
 
+def save_wave_as_mp3(wave, frame_rate=16000):
+    """
+    Save the wave numpy array as an MP3 file with a random name in a temporary directory.
+    
+    Args:
+        wave (numpy.ndarray): The wave data to save.
+        frame_rate (int): The frame rate of the audio.
+        
+    Returns:
+        str: The path to the saved MP3 file.
+    """
+    temp_dir = tempfile.gettempdir()
+    random_name = generate_random_filename()
+    temp_path = os.path.join(temp_dir, random_name)
+
+    # Convert numpy array to AudioSegment
+    audio_segment = AudioSegment(
+        wave.tobytes(), 
+        frame_rate=frame_rate,
+        sample_width=wave.dtype.itemsize, 
+        channels=1
+    )
+
+    # Export as mp3
+    audio_segment.export(temp_path, format="mp3")
+    print(f"Saved MP3 to {temp_path}")
+    
+    return temp_path
 
 
 # torch.set_num_threads(8)
@@ -125,12 +156,15 @@ class WhisperTranscriptorAPI:
                 wave1 = self.collect_chunks(speech_timestamps, wave)
                 # print(wave1)
                 wave = wave1.cpu().numpy()
+
+
             else:
                 pass
+            mp3_path = save_wave_as_mp3(wave)
             t1 = timeit.default_timer()
 
             segments, info = self.model(
-                                wave,
+                                mp3_path,
                             batch_size=self.batch_size,language="ur",
                                 )
             text = ""
