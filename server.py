@@ -117,14 +117,14 @@ def check_am(file_audio):
     
 @app.post("/transcribe_array")
 async def audio_to_numpy(file: bytes = File(...)):
-    # try:
+    try:
         am_result = check_am(file)
         audio_np = np.frombuffer(file, dtype=np.int16)
         transcript = await transcript_generator(wave=audio_np,sampling_rate=16000)
         txt = filter_hal(transcript[1])
         return {"message": "Conversion successful", "transcript":txt,'am_result':am_result}
-    # except Exception as e:
-        # raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
         
