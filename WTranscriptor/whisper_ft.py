@@ -1,4 +1,3 @@
-import torch
 import timeit
 import numpy as np
 import warnings
@@ -77,7 +76,7 @@ class WhisperTranscriptorAPI:
     
 
     def __init__(self,model_path='',file_processing=False,word_timestamp=True,mac_device=False,
-                 dtype = torch.float16,en_flash_attention = False,batch_size=128,
+                 en_flash_attention = False,batch_size=128,
                  vad_model = None,vad_thresold = 0.4,detect_language = True):
 
         '''
@@ -96,7 +95,7 @@ class WhisperTranscriptorAPI:
         self.vad_thresold = vad_thresold
         self.batch_size = batch_size
         
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        device = 'cuda'
         self.device = device
         print(device == "cuda" , "cuda check")
         if mac_device:
@@ -114,9 +113,7 @@ class WhisperTranscriptorAPI:
             else:
                     self.model = WhisperModel(self.model_path, device="cpu", compute_type="float16") 
         self.OUTPUT_DIR= "audios"
-        self.vad_model, self.utils = torch.hub.load('snakers4/silero-vad',
-                              model='silero_vad',
-                              force_reload=False)
+        
         self.vad_model = self.vad_model.to(device)
         (self.get_speech_timestamps,
         self.save_audio,
@@ -137,27 +134,13 @@ class WhisperTranscriptorAPI:
         '''
         
 
-        if self.mac_device:
-            torch.mps.empty_cache()
-        generate_kwargs = {"task": 'transcribe', "language": '<|en|>'}
-        if self.model_path.split(".")[-1] == "en":
-            generate_kwargs.pop("task")
-            generate_kwargs.pop("language") 
+        
+        
          
         t1 = timeit.default_timer()
-        if enable_vad:
-            wave = torch.from_numpy(wave).to(device=self.device).float()
-            speech_timestamps = self.get_speech_timestamps(wave, self.vad_model, sampling_rate=16000,threshold=self.vad_thresold)
-        else:
-            speech_timestamps = True
-        print('vad',enable_vad,speech_timestamps)
+        speech_timestamps = True 
         if speech_timestamps:
-            if enable_vad:
-                wave1 = self.collect_chunks(speech_timestamps, wave)
-                # print(wave1)
-                wave = wave1.cpu().numpy()
-            else:
-                pass
+
             mp3_path = save_wave_as_mp3(wave)
             t1 = timeit.default_timer()
             print(mp3_path)
