@@ -136,11 +136,11 @@ class WhisperTranscriptorAPI:
         speech_timestamps = True 
         if speech_timestamps:
 
-            mp3_path = save_wave_as_mp3(wave)
+            # mp3_path = save_wave_as_mp3(wave)
             t1 = timeit.default_timer()
-            print(mp3_path)
+            # print(mp3_path)
             segments, info = self.model.transcribe(
-                                mp3_path,
+                                wave,
                                 beam_size=5,
                             language="ur",
                                 )
