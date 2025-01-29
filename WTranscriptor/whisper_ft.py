@@ -114,12 +114,7 @@ class WhisperTranscriptorAPI:
                     self.model = WhisperModel(self.model_path, device="cpu", compute_type="float16") 
         self.OUTPUT_DIR= "audios"
         
-        self.vad_model = self.vad_model.to(device)
-        (self.get_speech_timestamps,
-        self.save_audio,
-        self.read_audio,
-        self.VADIterator,
-        self.collect_chunks) = self.utils
+       
 
         
         
