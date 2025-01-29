@@ -188,11 +188,9 @@ class WhisperTranscriptorAPI:
         
         
         # Transcribe the audio
-        outputs = self.model(
+        outputs = self.model.transcribe(
             audio_data,
-            chunk_length_s=15,
         batch_size=self.batch_size,
-        return_timestamps=False,
         )
 
         # Combine all segments
