@@ -160,7 +160,7 @@ class WhisperTranscriptorAPI:
                 pass
             mp3_path = save_wave_as_mp3(wave)
             t1 = timeit.default_timer()
-
+            print(mp3_path)
             segments, info = self.model.transcribe(
                                 mp3_path,
                             batch_size=self.batch_size,language="ur",
@@ -168,6 +168,7 @@ class WhisperTranscriptorAPI:
             text = ""
             for segment in segments:
                 text += segment.text
+
             transcription = filter_hallucination(text)
             
             print(transcription)
