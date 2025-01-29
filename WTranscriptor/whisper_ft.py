@@ -1,15 +1,10 @@
-from transformers import pipeline,WhisperProcessor, WhisperForConditionalGeneration,WhisperTokenizer,AutoProcessor
 import torch
 import timeit
 import numpy as np
 import warnings
-import os
-import zlib
-from typing import Optional,Dict,List,Collection
 warnings.filterwarnings('ignore')
 from WTranscriptor.utils.utils import *
 from pydantic import BaseModel
-import io
 import time
 import soundfile as sf
 from faster_whisper import WhisperModel
