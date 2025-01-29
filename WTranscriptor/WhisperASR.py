@@ -37,11 +37,18 @@ class ASR(object):
         model_name = config.get('model_name','whisper')
         vad_thresold = config.get('vad_thresold',0.4)
         if model_name == 'whisper':
-            from WTranscriptor.whisperlatest import WhisperTranscriptorAPI 
-            self.model = WhisperTranscriptorAPI(model_path=self.model_path,mac_device=False,vad_thresold=vad_thresold)
+            if config.get('type','faster_whisper') == 'faster_whisper':
+                from WTranscriptor.whisper_ft import WhisperTranscriptorAPI
+                print('Faster Whisper')
+                self.model = WhisperTranscriptorAPI(model_path=self.model_path,mac_device=False,vad_thresold=vad_thresold)
+            else:
+                from WTranscriptor.whisperlatest import WhisperTranscriptorAPI 
+                self.model = WhisperTranscriptorAPI(model_path=self.model_path,mac_device=False,vad_thresold=vad_thresold)
+             
         else:
             from WTranscriptor.nemo_asr import NemoTranscriptorAPI
             self.model = NemoTranscriptorAPI(model_path=self.model_path,mac_device=False)
+        
         # self.model = SileroTranscriptorAPI()
         print("[INFO] Model Loaded")
     @staticmethod
