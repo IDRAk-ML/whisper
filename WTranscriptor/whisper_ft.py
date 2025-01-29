@@ -163,7 +163,8 @@ class WhisperTranscriptorAPI:
             print(mp3_path)
             segments, info = self.model.transcribe(
                                 mp3_path,
-                            batch_size=self.batch_size,language="ur",
+                                beam_size=5,
+                            language="ur",
                                 )
             text = ""
             for segment in segments:
@@ -191,7 +192,7 @@ class WhisperTranscriptorAPI:
         # Transcribe the audio
         outputs = self.model.transcribe(
             audio_data,
-        batch_size=self.batch_size,
+            beam_size=5,
         )
 
         # Combine all segments
