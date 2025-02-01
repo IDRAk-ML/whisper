@@ -3,12 +3,12 @@ config = {
     "sample_rate": 16000,
     "duration_threshold": 3,
     "vad_threshold": 0.6,
-    "model_path": "large-v3",
+    "model_path": "whisper-medium.en",
     'mac_device': True,
     'model_name': 'whisper',
-    'enable_vad': True,
+    'enable_vad': False,
     'vad_thresold': 0.5,
-    'type': 'faster_whisper',
+    'type': '',
 }
 
 if config['type'] == 'faster_whisper':

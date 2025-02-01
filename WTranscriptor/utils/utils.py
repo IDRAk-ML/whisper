@@ -28,6 +28,7 @@ def is_hallucination(transcript, repetition_threshold=2):
             repeat_count = 0
     
     return False
+
 suppress_low = [
     "thank you",
     "thanks for",
@@ -56,17 +57,15 @@ suppress_low = [
     'see you, b.',
     '..',
     'hhhh',
-
-
     
 ]
 
 def filter_hallucination(transcript):
     for token  in suppress_low:
-        if token in transcript.lower():
+        if token in transcript.lower() and len(transcript) < len(token)*3 :
             return ''
     hal = ['you','your','video','thank','the','oh']
-    if len(transcript) < 6:
+    if len(transcript) < 5:
         for hal_st in hal:
             if hal_st in transcript.lower():
                 return ''

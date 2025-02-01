@@ -125,7 +125,7 @@ class WhisperTranscriptorAPI:
         Generate transcript usign a numpy array given as inpuy 
         '''
         
-
+        
         if self.mac_device:
             torch.mps.empty_cache()
         generate_kwargs = {"task": 'transcribe', "language": '<|en|>'}
@@ -161,6 +161,7 @@ class WhisperTranscriptorAPI:
             t2 = timeit.default_timer()
             print('Time taking for response',t2-t1)
             print('Audio Length',len(wave)/16000)
+
             return transcription,[]
         else:
             return "",[]
