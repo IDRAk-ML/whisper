@@ -153,3 +153,66 @@ async def transcribe_audio(
     print('response')
     return 'response'
 
+@app.websocket("/ws_file_transcribe1")
+async def websocket_endpoint(websocket: WebSocket):
+    try:
+        print('transcript 1 called')
+        model_name = config.get('model_name','whisper')
+        await websocket.accept()
+        data = await websocket.receive_bytes()  # Receive file data as bytes
+        file_name_short = ''.join(random.choices(string.ascii_letters + string.digits, k=6)) + ".wav"
+        file_name_full = f'temp/{file_name_short}'
+        with open(file_name_full, "wb") as file:
+            file.write(data)  # Save the received data to a file
+
+        audio_np,sr = read_wav_as_int16(file_name_full)
+        transcript = await transcript_generator(wave=audio_np)
+        filtered_transcript = filter_hal(transcript[1])
+        print('Transcript:',filtered_transcript)
+        await websocket.send_text(f"{filtered_transcript}")
+        await websocket.close()
+        try:
+            result = delete_file_if_exists(file_name_full)
+            print('Deleted',result)
+        except:
+            pass
+    except Exception as e:
+        print(f'Error: {e}')
+        
+@app.websocket("/ws_persistent_transcribe")
+async def websocket_persistent_endpoint(websocket: WebSocket):
+    await websocket.accept()  # Accept the WebSocket connection.
+    try:
+        print('ws_persistent_transcribe')
+        while True:  # Keep the connection open until the client closes it.
+            data = await websocket.receive()  # Wait for a message from the client.
+            
+            if "bytes" in data:  # Check if the message is a bytes instance.
+                file_data = data["bytes"]
+                file_name_short = ''.join(random.choices(string.ascii_letters + string.digits, k=6)) + ".wav"
+                file_name_full = f'temp/{file_name_short}'
+                with open(file_name_full, "wb") as file:
+                    file.write(file_data)  # Save the received data to a file.
+                
+                # Process the audio file to transcribe it.
+                try:
+                    audio_np, sr = read_wav_as_int16(file_name_full)
+                    transcript = await transcript_generator(wave=audio_np)
+                    filtered_transcript = filter_hal(transcript[1])
+                    await websocket.send_text(f"{filtered_transcript}")
+                finally:
+                    try:
+                        os.remove(file_name_full)  # Attempt to delete the file after processing.
+                    except Exception as e:
+                        print(f"Failed to delete file {file_name_full}: {e}")
+            else:
+                # Handle non-bytes messages here.
+                # For this example, we're just echoing back the text.
+                if "text" in data:
+                    await websocket.send_text(f"Received text message: {data['text']}")
+                else:
+                    await websocket.send_text("Unsupported message type.")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        await websocket.close()  # Make sure the WebSocket is closed properly.
