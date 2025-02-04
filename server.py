@@ -161,6 +161,7 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.accept()
         data = await websocket.receive_bytes()  # Receive file data as bytes
         file_name_short = ''.join(random.choices(string.ascii_letters + string.digits, k=6)) + ".wav"
+        os.makedirs('temp',exist_ok=True)
         file_name_full = f'temp/{file_name_short}'
         with open(file_name_full, "wb") as file:
             file.write(data)  # Save the received data to a file
