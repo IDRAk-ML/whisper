@@ -6,7 +6,7 @@ config = {
     "model_path": "whisper-medium.en",
     'mac_device': True,
     'model_name': 'whisper',
-    'enable_vad': False,
+    'enable_vad': True,
     'vad_thresold': 0.5,
     'type': '',
 }
