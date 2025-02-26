@@ -39,3 +39,14 @@ def transcribe_audio(file_path: str):
 # Example usage:
 transcript = transcribe_audio("/Users/ali/Desktop/human_sounds/ni_rebuttal.wav")
 print(transcript)
+
+
+'''
+example
+
+python test_client.py
+{'message': 'Conversion successful', 
+'transcript': " We are not asking to make any decisions over the phone.",
+ 'am_result': ''}
+
+'''
