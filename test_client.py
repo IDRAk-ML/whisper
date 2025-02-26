@@ -37,5 +37,5 @@ def transcribe_audio(file_path: str):
         return {"error": "Failed to transcribe audio", "status_code": response.status_code, "response": response.text}
 
 # Example usage:
-transcript = transcribe_audio("WTranscriptor/audios/20sec.wav")
+transcript = transcribe_audio("/Users/ali/Desktop/human_sounds/ni_rebuttal.wav")
 print(transcript)
