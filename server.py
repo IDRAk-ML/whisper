@@ -98,7 +98,7 @@ async def transcribe_audio(audio_file: UploadFile = File(...), language: Optiona
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.websocket("/ws_file_transcribe")
+@app.websocket("/ws_file_transcribe1")
 async def websocket_endpoint(websocket: WebSocket):
     try:
         await websocket.accept()

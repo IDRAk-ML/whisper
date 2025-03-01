@@ -47,7 +47,7 @@ class ASRClient:
             wf.writeframes(np.int16(wave_file).tobytes())
         return file_path
 
-    def send_audio_to_asr(self, audio_path, key, lang="auto"):
+    def send_audio_to_asr(self, audio_path, key, lang="en"):
         """
         Sends a WAV file to the ASR API for transcription.
 
@@ -68,7 +68,7 @@ class ASRClient:
             response = requests.post(self.api_url, files=files, data=data)
             return response.json()
 
-    def transcribe_audio_array(self, audio_array, sample_rate=16000, lang="auto"):
+    def transcribe_audio_array(self, audio_array, sample_rate=16000, lang="en"):
         """
         Converts a NumPy array to a WAV file, sends it to ASR API, and returns only the transcript.
 

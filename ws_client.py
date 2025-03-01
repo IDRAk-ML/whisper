@@ -29,7 +29,7 @@ if __name__ == "__main__":
     #     print("Usage: python client.py <audio_file.wav>")
     #     sys.exit(1)
     
-    file_path = 'WTranscriptor/audios/40sec.wav'
-    websocket_uri = "ws://148.251.178.29:9005/ws_persistent_transcribe"  # Adjust this if the server is running on a different host/port
+    file_path = 'WTranscriptor/audios/amy.wav'
+    websocket_uri = "ws://148.251.178.29:9005/ws_file_transcribe1"  # Adjust this if the server is running on a different host/port
     
-    asyncio.run(send_persistent_audio(websocket_uri, file_path))
+    asyncio.run(send_audio_and_receive_transcript(websocket_uri, file_path))
