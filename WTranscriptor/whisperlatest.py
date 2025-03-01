@@ -128,7 +128,7 @@ class WhisperTranscriptorAPI:
         
         if self.mac_device:
             torch.mps.empty_cache()
-        generate_kwargs = {"task": 'transcribe', "language": '<|en|>'}
+        generate_kwargs = {"task": 'transcribe', "language": '<|en|>',"temperature": 0.0}
         if self.model_path.split(".")[-1] == "en":
             generate_kwargs.pop("task")
             generate_kwargs.pop("language") 
@@ -196,4 +196,4 @@ class WhisperTranscriptorAPI:
             processing_time=processing_time
         )
 
-        
+         
