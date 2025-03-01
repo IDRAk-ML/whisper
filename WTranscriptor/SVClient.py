@@ -5,7 +5,7 @@ import os
 import uuid
 import librosa
 class ASRClient:
-    def __init__(self, api_url="http://127.0.0.1:9006/api/v1/asr", temp_dir="temp"):
+    def __init__(self, api_url="http://0.0.0.0:9006/api/v1/asr", temp_dir="temp"):
         """
         Initializes the ASRClient with API URL and temp directory.
 
@@ -16,6 +16,11 @@ class ASRClient:
         self.api_url = api_url
         self.temp_dir = temp_dir
         os.makedirs(self.temp_dir, exist_ok=True)
+
+    def filter_hallucination(self,text):
+        if text == 'ju' or text == 'y':
+            return ''
+        return text
 
     def save_audio(self, audio_array, file_name="audio.wav", sample_rate=16000):
         """
@@ -82,9 +87,9 @@ class ASRClient:
         # Extract transcript
         if "result" in response and isinstance(response["result"], list):
             for entry in response["result"]:
-                if entry.get("key") == key and "text" in entry:
-                    return entry["text"]
+                if entry.get("key") == key and "clean_text" in entry:
 
+                    return self.filter_hallucination(entry["clean_text"])
         return ""  # Return empty string if transcript is not found
 
 
