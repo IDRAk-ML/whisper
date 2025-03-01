@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 WTranscriptor/exame1.wav
 *.jit
+.wav
