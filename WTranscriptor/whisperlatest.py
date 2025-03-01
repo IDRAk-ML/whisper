@@ -39,7 +39,7 @@ class WhisperTranscriptorAPI:
     '''
     #----------------------- constructor -------------------------------------
     #
-    
+     
 
     def __init__(self,model_path='',file_processing=False,word_timestamp=True,mac_device=False,
                  dtype = torch.float16,en_flash_attention = False,batch_size=128,

@@ -25,7 +25,7 @@ def send_audio_to_asr(audio_files, keys, lang="auto"):
 
 # Example usage
 if __name__ == "__main__":
-    audio_files = ["WTranscriptor/audios/preamble_5sec_resample_with_pause.wav"]  # Replace with your actual file paths
+    audio_files = ["WTranscriptor/audios/40sec.wav"]  # Replace with your actual file paths
     keys = ["audio1"]
     lang = "en"
 

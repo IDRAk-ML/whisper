@@ -52,12 +52,10 @@ suppress_low = [
     "ee you next week",
     "video",
     "see you",
-    'bye',
     'bye-bye',
     'see you, b.',
     '..',
     'hhhh',
-    
 ]
 
 def filter_hallucination(transcript):
