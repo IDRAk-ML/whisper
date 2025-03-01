@@ -1,6 +1,6 @@
 import requests
 
-API_URL = "http://78.46.99.15:9005/api/v1/asr"
+API_URL = "http://0.0.0.0:9006/api/v1/asr"
 
 def send_audio_to_asr(audio_files, keys, lang="auto"):
     """

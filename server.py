@@ -20,7 +20,7 @@ import string
 import librosa
 import soundfile as sf
 import requests
-from config import config
+from config import config,HELPING_ASR_FLAG
 import gzip
 from WTranscriptor.classification_utils.utils import *
 from fastapi import FastAPI, UploadFile, File
@@ -28,6 +28,12 @@ from hallucination_filters import suppress_low
 
 from typing import Optional
 
+
+helping_asr = None
+
+if HELPING_ASR_FLAG:
+    from WTranscriptor.SVClient import ASRClient
+    helping_asr = ASRClient()
 class AudioInput(BaseModel):
     audio_bytes_str: str
 
@@ -79,8 +85,6 @@ async def transcript_generator(wave,sampling_rate=16000,file_mode=False,language
         if sampling_rate != 16000:
             wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
 
-
-
         transcript = [[],'']
         if model_name == 'whisper':
             transcript = await asr.get_transcript(wave,sample_rate=sampling_rate,enable_vad=config['enable_vad'])
@@ -117,14 +121,20 @@ def check_am(file_audio):
     
 @app.post("/transcribe_array")
 async def audio_to_numpy(file: bytes = File(...)):
-    try:
+    # try:
         am_result = check_am(file)
         audio_np = np.frombuffer(file, dtype=np.int16)
         transcript = await transcript_generator(wave=audio_np,sampling_rate=16000)
         txt = filter_hal(transcript[1])
+
+        if len(txt) <= 1:
+            if helping_asr:
+                helping_transcript = helping_asr.transcribe_audio_array(audio_array=audio_np
+                                                )
+                txt = helping_transcript
         return {"message": "Conversion successful", "transcript":txt,'am_result':am_result}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    # except Exception as e:
+    #     raise HTTPException(status_code=400, detail=str(e))
 
 
         
@@ -169,6 +179,12 @@ async def websocket_endpoint(websocket: WebSocket):
         audio_np,sr = read_wav_as_int16(file_name_full)
         transcript = await transcript_generator(wave=audio_np)
         filtered_transcript = filter_hal(transcript[1])
+
+        if len(filtered_transcript) <= 1:
+            if helping_asr:
+                helping_transcript = helping_asr.transcribe_audio_array(audio_array=audio_np
+                                                )
+                filtered_transcript = helping_transcript
         print('Transcript:',filtered_transcript)
         await websocket.send_text(f"{filtered_transcript}")
         await websocket.close()
@@ -200,6 +216,11 @@ async def websocket_persistent_endpoint(websocket: WebSocket):
                     audio_np, sr = read_wav_as_int16(file_name_full)
                     transcript = await transcript_generator(wave=audio_np)
                     filtered_transcript = filter_hal(transcript[1])
+                    if len(filtered_transcript) <= 1:
+                        if helping_asr:
+                            helping_transcript = helping_asr.transcribe_audio_array(audio_array=audio_np
+                                                            )
+                            filtered_transcript = helping_transcript 
                     await websocket.send_text(f"{filtered_transcript}")
                 finally:
                     try:

@@ -2,12 +2,12 @@
 config = {
     "sample_rate": 16000,
     "duration_threshold": 3,
-    "vad_threshold": 0.6,
+    "vad_threshold": 0.4,
     "model_path": "whisper-medium.en",
     'mac_device': True,
     'model_name': 'whisper',
     'enable_vad': True,
-    'vad_thresold': 0.5,
+    'vad_thresold': 0.4,
     'type': '',
 }
 
@@ -16,3 +16,6 @@ if config['type'] == 'faster_whisper':
 else:
     BASE_PATH = 'openai/'
 config['model_path'] = BASE_PATH + config['model_path']
+
+
+HELPING_ASR_FLAG = True

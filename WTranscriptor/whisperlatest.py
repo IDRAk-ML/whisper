@@ -12,6 +12,8 @@ from pydantic import BaseModel
 import io
 import time
 import soundfile as sf
+
+
 '''
 Faster Implementation of Whisper
 '''
@@ -128,7 +130,7 @@ class WhisperTranscriptorAPI:
         
         if self.mac_device:
             torch.mps.empty_cache()
-        generate_kwargs = {"task": 'transcribe', "language": '<|en|>'}
+        generate_kwargs = {"task": 'transcribe', "language": '<|en|>',"temperature": 0.01,}
         if self.model_path.split(".")[-1] == "en":
             generate_kwargs.pop("task")
             generate_kwargs.pop("language") 
@@ -137,6 +139,7 @@ class WhisperTranscriptorAPI:
         if enable_vad:
             wave = torch.from_numpy(wave).to(device=self.device).float()
             speech_timestamps = self.get_speech_timestamps(wave, self.vad_model, sampling_rate=16000,threshold=self.vad_thresold)
+            
         else:
             speech_timestamps = True
         print('vad',enable_vad,speech_timestamps)
@@ -164,6 +167,8 @@ class WhisperTranscriptorAPI:
 
             return transcription,[]
         else:
+            # adding sense voice here
+            
             return "",[]
     async def genereate_transcript_from_file(self, file_name):
         return 'method not implemented; for whisper use generate_transcript_numpy', []
@@ -173,7 +178,7 @@ class WhisperTranscriptorAPI:
         start_time = time.time()
         
         # Create an in-memory buffer for the audio data
-        
+         
         
         # Transcribe the audio
         outputs = self.model(
