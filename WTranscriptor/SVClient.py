@@ -78,7 +78,7 @@ class ASRClient:
         key = str(uuid.uuid4())  # Generate a random UUID as the key
         audio_path = self.save_audio(audio_array, f"{key}.wav", sample_rate)
         response = self.send_audio_to_asr(audio_path, key, lang)
-
+        print("[+] SV Client is predicting")
         # Extract transcript
         if "result" in response and isinstance(response["result"], list):
             for entry in response["result"]:
