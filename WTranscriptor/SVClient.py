@@ -4,6 +4,8 @@ import requests
 import os
 import uuid
 import librosa
+import noisereduce as nr
+
 class ASRClient:
     def __init__(self, api_url="http://0.0.0.0:9006/api/v1/asr", temp_dir="temp"):
         """
@@ -18,7 +20,9 @@ class ASRClient:
         os.makedirs(self.temp_dir, exist_ok=True)
 
     def filter_hallucination(self,text):
-        if text == 'ju' or text == 'y':
+        if text == 'ju' or text =='y' or text == 'ok' or text =='i':
+            return ''
+        if len(text) <= 1:
             return ''
         return text
 
@@ -38,13 +42,14 @@ class ASRClient:
         
         if sample_rate != 16000:
             wave_file = librosa.resample(wave_file, orig_sr=sample_rate, target_sr=16000)
-            
+
+        reduced_noise = nr.reduce_noise(y=wave_file, sr=sample_rate, prop_decrease=0.8)
         file_path = os.path.join(self.temp_dir, file_name)
         with wave.open(file_path, 'wb') as wf:
             wf.setnchannels(1)  # Mono
             wf.setsampwidth(2)  # 16-bit PCM
             wf.setframerate(sample_rate)
-            wf.writeframes(np.int16(wave_file).tobytes())
+            wf.writeframes(np.int16(reduced_noise).tobytes())
         return file_path
 
     def send_audio_to_asr(self, audio_path, key, lang="en"):
