@@ -5,7 +5,7 @@ import numpy as np
 from scipy.signal import resample
 
 
-SERVER_ADDRESS = "148.251.178.29:9011" 
+SERVER_ADDRESS = "148.251.178.29:9012" 
 
 def transcribe_audio(file_path: str):
     # Read the audio file
@@ -37,7 +37,7 @@ def transcribe_audio(file_path: str):
         return {"error": "Failed to transcribe audio", "status_code": response.status_code, "response": response.text}
 
 # Example usage:
-transcript = transcribe_audio("/Users/ali/Desktop/ali_works/temp_code/am_121-region-1.wav")
+transcript = transcribe_audio("20sec_DeepFilterNet3.wav")
 print(transcript)
 
 
