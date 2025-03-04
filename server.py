@@ -143,7 +143,7 @@ async def websocket_persistent_endpoint(websocket: WebSocket):
                 
                 if len(filtered_transcript)<=1 and helping_asr:
                     filtered_transcript = helping_asr.transcribe_audio_array(audio_array=audio_np)
-                
+                    
                 await websocket.send_text(filtered_transcript)
                 os.remove(file_name)
             elif "text" in data:
