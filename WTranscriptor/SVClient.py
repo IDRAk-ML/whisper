@@ -8,7 +8,7 @@ from df.enhance import enhance, init_df, load_audio, save_audio
 from df.utils import download_file
 
 
-
+import torch
 
 class ASRClient:
     def __init__(self, api_url="http://0.0.0.0:9006/api/v1/asr", temp_dir="temp"):
@@ -23,12 +23,39 @@ class ASRClient:
         self.temp_dir = temp_dir
         os.makedirs(self.temp_dir, exist_ok=True)
         self.denoise_model, self.df_state, _ = init_df()
+
+
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.vad_model, self.utils = torch.hub.load('snakers4/silero-vad',
+                              model='silero_vad',
+                              force_reload=False)
+        self.vad_model = self.vad_model.to(device)
+        (self.get_speech_timestamps,
+        self.save_audio_,
+        self.read_audio_,
+        self.VADIterator,
+        self.collect_chunks) = self.utils
+        
+
+
     def filter_hallucination(self,text):
         if text == 'ju' or text =='y' or text == 'ok' or text =='i':
             return ''
         if len(text) <= 1:
             return ''
         return text
+    
+
+    def resample_audio(self,audio_array,orig_sr=16000,target_sr=16000):
+
+        wave_file = audio_array
+        
+        if orig_sr != target_sr:
+            wave_file = librosa.resample(wave_file, orig_sr=orig_sr, target_sr=target_sr)
+
+        return wave_file
+    
+
 
     def save_audio(self, audio_array, file_name="audio.wav", sample_rate=16000):
         """
@@ -42,17 +69,14 @@ class ASRClient:
         Returns:
         - Path to the saved WAV file
         """
-        wave_file = audio_array
         
-        if sample_rate != 16000:
-            wave_file = librosa.resample(wave_file, orig_sr=sample_rate, target_sr=16000)
-
+        wave_file = self.resample_audio(audio_array,sample_rate,16000)
         
         file_path = os.path.join(self.temp_dir, file_name)
         with wave.open(file_path, 'wb') as wf:
             wf.setnchannels(1)  # Mono
             wf.setsampwidth(2)  # 16-bit PCM
-            wf.setframerate(sample_rate)
+            wf.setframerate(16000)
             wf.writeframes(np.int16(wave_file).tobytes())
         return file_path
 
@@ -82,7 +106,28 @@ class ASRClient:
         enhanced = enhance(self.denoise_model, self.df_state, audio)
         # Save for listening
         save_audio(audio_path, enhanced, self.df_state.sr())
-        return audio_path
+        return audio_path 
+    
+    
+    
+    def apply_vad(self,audio_path):
+        wave, sr = librosa.load(audio_path, sr=None)
+
+        if sr != 16000:
+            wave = self.resample_audio(wave,sr,16000)
+
+        wave = torch.from_numpy(wave).to(device=self.device).float()
+        speech_timestamps = self.get_speech_timestamps(wave, self.vad_model, sampling_rate=16000,threshold=0.3)
+        if speech_timestamps:
+            wave1 = self.collect_chunks(speech_timestamps, wave)
+            # print(wave1)
+            wave = wave1.cpu().numpy()
+            self.save_audio(wave,audio_path,16000)
+            return audio_path
+        else:
+            print('VAD Did Not Detect a Speech')
+            return None
+        
 
     def transcribe_audio_array(self, audio_array, sample_rate=16000, lang="en"):
         """
@@ -98,8 +143,15 @@ class ASRClient:
         """
         key = str(uuid.uuid4())  # Generate a random UUID as the key
         audio_path = self.save_audio(audio_array, f"{key}.wav", sample_rate)
+
         # denoise here
         audio_path = self.denoise_audio(audio_path)
+
+        audio_path = self.apply_vad(audio_path)
+
+        if not audio_path:
+            return ""
+        
         response = self.send_audio_to_asr(audio_path, key, lang)
         print("[+] SV Client is predicting")
         # Extract transcript
