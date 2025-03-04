@@ -22,7 +22,7 @@ class ASRClient:
         self.api_url = api_url
         self.temp_dir = temp_dir
         os.makedirs(self.temp_dir, exist_ok=True)
-        self.denoise_model, self.df_state, _ = init_df()
+        self.denoise_model, self.df_state, _ = init_df("./DeepFilterNet2", config_allow_defaults=True)
     def filter_hallucination(self,text):
         if text == 'ju' or text =='y' or text == 'ok' or text =='i':
             return ''
