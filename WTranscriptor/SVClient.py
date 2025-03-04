@@ -25,11 +25,11 @@ class ASRClient:
         self.denoise_model, self.df_state, _ = init_df()
 
 
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.vad_model, self.utils = torch.hub.load('snakers4/silero-vad',
                               model='silero_vad',
                               force_reload=False)
-        self.vad_model = self.vad_model.to(device)
+        self.vad_model = self.vad_model.to(self.device)
         (self.get_speech_timestamps,
         self.save_audio_,
         self.read_audio_,
@@ -39,7 +39,7 @@ class ASRClient:
 
 
     def filter_hallucination(self,text):
-        if text == 'ju' or text =='y' or text == 'ok' or text =='i':
+        if text == 'ju' or text =='y' or text =='i':
             return ''
         if len(text) <= 1:
             return ''
@@ -111,6 +111,7 @@ class ASRClient:
     
     
     def apply_vad(self,audio_path):
+        print('APPLYING SEC VAD')
         wave, sr = librosa.load(audio_path, sr=None)
 
         if sr != 16000:
@@ -118,11 +119,12 @@ class ASRClient:
 
         wave = torch.from_numpy(wave).to(device=self.device).float()
         speech_timestamps = self.get_speech_timestamps(wave, self.vad_model, sampling_rate=16000,threshold=0.3)
+        print(speech_timestamps)
         if speech_timestamps:
             wave1 = self.collect_chunks(speech_timestamps, wave)
             # print(wave1)
             wave = wave1.cpu().numpy()
-            self.save_audio(wave,audio_path,16000)
+            # self.save_audio(wave,audio_path,16000)
             return audio_path
         else:
             print('VAD Did Not Detect a Speech')
@@ -153,7 +155,7 @@ class ASRClient:
             return ""
         
         response = self.send_audio_to_asr(audio_path, key, lang)
-        print("[+] SV Client is predicting")
+        print("[-] SV Client is predicting")
         # Extract transcript
         if "result" in response and isinstance(response["result"], list):
             for entry in response["result"]:
