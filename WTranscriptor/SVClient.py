@@ -128,7 +128,7 @@ class ASRClient:
             return audio_path
         else:
             print('VAD Did Not Detect a Speech')
-            return audio_data
+            return audio_path
         
 
     def transcribe_audio_array(self, audio_array, sample_rate=16000, lang="en"):
