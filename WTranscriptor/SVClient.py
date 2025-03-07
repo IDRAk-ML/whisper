@@ -169,7 +169,7 @@ class ASRClient:
                                     return text
                             
                             text = text.strip()
-                            hal_word = ['it','the','ug','-']
+                            hal_word = ['it','the','ug','-','ok']
                             for h in hal_word:
                                 if h in text:
                                     return ""
