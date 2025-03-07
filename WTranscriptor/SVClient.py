@@ -8,9 +8,14 @@ from df.enhance import enhance, init_df, load_audio, save_audio
 from df.utils import download_file
 import re
 
+
 def hal_check(text: str) -> str:
     text = text.strip().lower()  # Normalize text
     text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
+
+    # If text length is greater than 5, return as is
+    if len(text) >= 5:
+        return text  
 
     keep = ['hel', 'ye', 'hi', 'yes', 'yup', 'um', 'hello', 'hey', 'he']
     hal_word = ['it', 'the', 'ug', '-', 'ok']
@@ -18,16 +23,16 @@ def hal_check(text: str) -> str:
     # Check if any 'keep' words exist in the text
     for k in keep:
         if k in text:
-            if "the" in text:  # Block if 'the' is present
-                return ""
-            return text  # Return original text if a keep word is found
+            if 'the' in text:
+                return ''
+            return text  # If any keep word is found, return text
 
-    # Check if any 'hal_word' exists in the text
+    # Check if any 'hal_word' exists in the text (only if len <= 5)
     for h in hal_word:
         if h in text:
-            return ""
+            return ""  # Block the text
 
-    return "" if len(text) <= 2 else text  # Reject very short texts
+    return text  # Return original text if no block words are found
 
 import torch
 
