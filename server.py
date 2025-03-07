@@ -67,6 +67,7 @@ async def transcript_generator(wave: np.ndarray, sampling_rate: int = 16000, fil
     if not file_mode:
         model_name = config.get('model_name', 'whisper')
         wave = wave / np.iinfo(np.int16).max
+        print('Wave type After Scale',wave)
         if sampling_rate != 16000:
             wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
         transcript = await asr.get_transcript(wave, sample_rate=sampling_rate, enable_vad=config['enable_vad'])
@@ -79,6 +80,7 @@ async def audio_to_numpy(file: bytes = File(...)):
     try:
         am_result = check_am(file)
         audio_np = np.frombuffer(file, dtype=np.int16)
+        print('Wave type init',audio_np)
         transcript = await transcript_generator(wave=audio_np, sampling_rate=16000)
         txt = filter_hal(transcript[1])
 
@@ -110,7 +112,9 @@ async def websocket_endpoint(websocket: WebSocket):
         with open(file_name, "wb") as file:
             file.write(data)
         
+        
         audio_np, sr = read_wav_as_int16(file_name)
+        print('Wave type init',audio_np)
         print(sr)
         transcript = await transcript_generator(wave=audio_np,sampling_rate=sr)
         filtered_transcript = filter_hal(transcript[1])
