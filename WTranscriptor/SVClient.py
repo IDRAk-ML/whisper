@@ -23,8 +23,6 @@ def hal_check(text: str) -> str:
     # Check if any 'keep' words exist in the text
     for k in keep:
         if k in text:
-            if 'the' in text:
-                return ''
             return text  # If any keep word is found, return text
 
     # Check if any 'hal_word' exists in the text (only if len <= 5)
