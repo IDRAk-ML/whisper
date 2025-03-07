@@ -84,6 +84,8 @@ async def audio_to_numpy(file: bytes = File(...)):
 
         if len(txt)<=1 and helping_asr:
             txt = helping_asr.transcribe_audio_array(audio_array=audio_np)
+
+        print(f'[+] Transcript Sending {txt}')
         
         return {"message": "Conversion successful", "transcript": txt, "am_result": am_result}
     except Exception as e:
@@ -114,7 +116,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
         if len(filtered_transcript)<=1 and helping_asr:
             filtered_transcript = helping_asr.transcribe_audio_array(audio_array=audio_np)
-
+        print(f'[+] Transcript Sending {filtered_transcript}')
         await websocket.send_text(filtered_transcript)
     except Exception as e:
         print(f"Error: {e}")
@@ -143,7 +145,7 @@ async def websocket_persistent_endpoint(websocket: WebSocket):
                 
                 if len(filtered_transcript)<=1 and helping_asr:
                     filtered_transcript = helping_asr.transcribe_audio_array(audio_array=audio_np)
-                    
+                print(f'[+] Transcript Sending {filtered_transcript}') 
                 await websocket.send_text(filtered_transcript)
                 os.remove(file_name)
             elif "text" in data:
