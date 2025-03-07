@@ -6,7 +6,28 @@ import uuid
 import librosa
 from df.enhance import enhance, init_df, load_audio, save_audio
 from df.utils import download_file
+import re
 
+def hal_check(text: str) -> str:
+    text = text.strip().lower()  # Normalize text
+    text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
+
+    keep = ['hel', 'ye', 'hi', 'yes', 'yup', 'um', 'hello', 'hey', 'he']
+    hal_word = ['it', 'the', 'ug', '-', 'ok']
+
+    # Check if any 'keep' words exist in the text
+    for k in keep:
+        if k in text:
+            if "the" in text:  # Block if 'the' is present
+                return ""
+            return text  # Return original text if a keep word is found
+
+    # Check if any 'hal_word' exists in the text
+    for h in hal_word:
+        if h in text:
+            return ""
+
+    return "" if len(text) <= 2 else text  # Reject very short texts
 
 import torch
 
@@ -162,22 +183,7 @@ class ASRClient:
                     if _:
                         return self.filter_hallucination(entry["clean_text"])
                     else:
-                        def hal_check(text: str) -> str:
-                            keep = ['hel','ye','hi','yes','yup','um','hello','hey','he']
-                            for k in keep:
-                                if k in text:
-                                    if 'the' in text:
-                                        return ""
-                                    return text
-                            
-                            text = text.strip()
-                            hal_word = ['it','the','ug','-','ok']
-                            for h in hal_word:
-                                if h in text:
-                                    return ""
-                            if len(text) >= 2:
-                                return text.strip()
-                            return ''
+                        
                         
                         text = hal_check(entry["clean_text"])
                         
