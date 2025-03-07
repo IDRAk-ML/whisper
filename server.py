@@ -132,6 +132,43 @@ async def websocket_endpoint(websocket: WebSocket):
     #     except FileNotFoundError:
     #         pass
 
+
+TARGET_SR = 16000  # Target sample rate
+
+@app.websocket("/ws_file_transcribe3")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    data = await websocket.receive_bytes()  # Receive raw bytes
+    
+    # Convert received bytes to numpy int16 array
+    audio_np = np.frombuffer(data, dtype=np.int16)
+    
+    # Convert int16 to float32 for librosa
+    audio_float = librosa.util.buf_to_float(audio_np, n_bytes=2)
+    
+    # Load into librosa to determine actual sample rate
+    audio_resampled, sr = librosa.load(librosa.util.buf_to_float(audio_np, n_bytes=2), sr=None)
+
+    print(f"Detected Sample Rate: {sr}")
+
+    # Resample to 16kHz if needed
+    if sr != TARGET_SR:
+        audio_resampled = librosa.resample(audio_resampled, orig_sr=sr, target_sr=TARGET_SR)
+
+    # Convert back to int16 after resampling
+    audio_final = (audio_resampled * 32767).astype(np.int16)
+
+    print('Wave type init', audio_final)
+
+    transcript = await transcript_generator(wave=audio_final, sampling_rate=TARGET_SR)
+    filtered_transcript = filter_hal(transcript[1])
+
+    if len(filtered_transcript) <= 1 and helping_asr:
+        filtered_transcript = helping_asr.transcribe_audio_array(audio_array=audio_final)
+
+    print(f'[+] Transcript Sending {filtered_transcript if len(filtered_transcript) > 3 else "Nothing"}')
+    await websocket.send_text(filtered_transcript)
+
 @app.websocket("/ws_file_transcribe2")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
