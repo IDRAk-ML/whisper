@@ -153,7 +153,7 @@ class ASRClient:
             return ""
         
         response = self.send_audio_to_asr(audio_path, key, lang)
-        print("[-] SV Client is predicting")
+        print("[-] SV Client is predicting",response)
         # Extract transcript
         if "result" in response and isinstance(response["result"], list):
             for entry in response["result"]:
