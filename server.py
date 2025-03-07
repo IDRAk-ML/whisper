@@ -102,7 +102,7 @@ async def transcribe_audio(audio_file: UploadFile = File(...), language: Optiona
 
 @app.websocket("/ws_file_transcribe1")
 async def websocket_endpoint(websocket: WebSocket):
-    try:
+    # try:
         await websocket.accept()
         data = await websocket.receive_bytes()
         file_name = f"temp/{''.join(random.choices(string.ascii_letters + string.digits, k=6))}.wav"
@@ -118,14 +118,14 @@ async def websocket_endpoint(websocket: WebSocket):
             filtered_transcript = helping_asr.transcribe_audio_array(audio_array=audio_np)
         print(f'[+] Transcript Sending {filtered_transcript if len(filtered_transcript) > 3 else "Nothing"}')
         await websocket.send_text(filtered_transcript)
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        await websocket.close()
-        try:
-            os.remove(file_name)
-        except FileNotFoundError:
-            pass
+    # except Exception as e:
+    #     print(f"Error: {e}")
+    # finally:
+    #     await websocket.close()
+    #     try:
+    #         os.remove(file_name)
+    #     except FileNotFoundError:
+    #         pass
 
 @app.websocket("/ws_persistent_transcribe")
 async def websocket_persistent_endpoint(websocket: WebSocket):
