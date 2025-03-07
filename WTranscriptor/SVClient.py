@@ -164,8 +164,23 @@ class ASRClient:
                     if _:
                         return self.filter_hallucination(entry["clean_text"])
                     else:
-                        text = entry["clean_text"]
-                        if len(text) >= 2:
+                        def hal_check(text: str) -> str:
+                            keep = ['hello','yeah','hi','yes','yup','um']
+                            for k in keep:
+                                if k in text:
+                                    return text
+                            
+                            text = text.strip()
+                            hal_word = ['it','the','ug','-']
+                            for h in hal_word:
+                                if h in text:
+                                    return ""
+                            if len(text) >= 3:
+                                return text.strip()
+                            return ''
+                        
+                        text = hal_check(entry["clean_text"])
+                        if len(text) >= 3:
                             return text
                         else:
                             return ""
