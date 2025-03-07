@@ -125,10 +125,10 @@ class ASRClient:
             # print(wave1)
             wave = wave1.cpu().numpy()
             # self.save_audio(wave,audio_path,16000)
-            return audio_path
+            return audio_path,True
         else:
             print('VAD Did Not Detect a Speech')
-            return audio_path
+            return audio_path,False
         
 
     def transcribe_audio_array(self, audio_array, sample_rate=16000, lang="en"):
@@ -149,7 +149,7 @@ class ASRClient:
         # denoise here
         audio_path = self.denoise_audio(audio_path)
 
-        audio_path = self.apply_vad(audio_path)
+        audio_path,_ = self.apply_vad(audio_path)
 
         if not audio_path:
             return ""
@@ -160,8 +160,15 @@ class ASRClient:
         if "result" in response and isinstance(response["result"], list):
             for entry in response["result"]:
                 if entry.get("key") == key and "clean_text" in entry:
-
-                    return self.filter_hallucination(entry["clean_text"])
+                    
+                    if _:
+                        return self.filter_hallucination(entry["clean_text"])
+                    else:
+                        text = entry["clean_text"]
+                        if len(text) >= 2:
+                            return text
+                        else:
+                            return ""
         return ""  # Return empty string if transcript is not found
 
 
