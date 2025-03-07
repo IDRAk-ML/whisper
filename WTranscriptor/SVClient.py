@@ -180,10 +180,9 @@ class ASRClient:
                             return ''
                         
                         text = hal_check(entry["clean_text"])
-                        if len(text) >= 3:
-                            return text
-                        else:
-                            return ""
+                        
+                        return text
+                        
         return ""  # Return empty string if transcript is not found
 
 
