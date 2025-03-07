@@ -41,8 +41,6 @@ class ASRClient:
     def filter_hallucination(self,text):
         if text == 'ju' or text =='y' or text =='i':
             return ''
-        if len(text) <= 1:
-            return ''
         return text
     
 
