@@ -111,6 +111,7 @@ async def websocket_endpoint(websocket: WebSocket):
             file.write(data)
         
         audio_np, sr = read_wav_as_int16(file_name)
+        print(sr)
         transcript = await transcript_generator(wave=audio_np,sampling_rate=sr)
         filtered_transcript = filter_hal(transcript[1])
 
