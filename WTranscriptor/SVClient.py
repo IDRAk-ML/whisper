@@ -163,9 +163,11 @@ class ASRClient:
                         return self.filter_hallucination(entry["clean_text"])
                     else:
                         def hal_check(text: str) -> str:
-                            keep = ['hel','ye','hi','yes','yup','um','hello','hey']
+                            keep = ['hel','ye','hi','yes','yup','um','hello','hey','he']
                             for k in keep:
                                 if k in text:
+                                    if 'the' in text:
+                                        return ""
                                     return text
                             
                             text = text.strip()
