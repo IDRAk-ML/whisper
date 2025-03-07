@@ -132,6 +132,25 @@ async def websocket_endpoint(websocket: WebSocket):
     #     except FileNotFoundError:
     #         pass
 
+@app.websocket("/ws_file_transcribe2")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    data = await websocket.receive_bytes()  # Receive audio data as bytes
+    
+    # Convert received bytes directly to a NumPy array (like REST API)
+    audio_np = np.frombuffer(data, dtype=np.int16)
+    
+    print('Wave type init', audio_np)
+
+    transcript = await transcript_generator(wave=audio_np, sampling_rate=16000)  # Ensure same sample rate
+    filtered_transcript = filter_hal(transcript[1])
+
+    if len(filtered_transcript) <= 1 and helping_asr:
+        filtered_transcript = helping_asr.transcribe_audio_array(audio_array=audio_np)
+
+    print(f'[+] Transcript Sending {filtered_transcript if len(filtered_transcript) > 3 else "Nothing"}')
+    await websocket.send_text(filtered_transcript)
+    
 @app.websocket("/ws_persistent_transcribe")
 async def websocket_persistent_endpoint(websocket: WebSocket):
     await websocket.accept()
