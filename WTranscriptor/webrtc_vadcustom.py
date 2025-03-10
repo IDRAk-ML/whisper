@@ -72,6 +72,7 @@ class WebRTCVADSpeechDetector:
         if current_seg:
             segments.append(tuple(current_seg))
         
+        print(segments)
         return segments
     
     def detect_speech(self, file_path):
