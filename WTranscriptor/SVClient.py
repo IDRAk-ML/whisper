@@ -8,7 +8,7 @@ from df.enhance import enhance, init_df, load_audio, save_audio
 from df.utils import download_file
 from WTranscriptor.webrtc_vadcustom import WebRTCVADSpeechDetector
 import re
-
+from WTranscriptor.utils.utils import transcript_generator
 
 def hal_check(text: str) -> str:
     text = text.strip().lower()  # Normalize text
