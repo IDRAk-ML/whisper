@@ -12,7 +12,8 @@ import re
 from config import config, HELPING_ASR_FLAG
 
 
-def read_audio(self, file_path):
+def read_audio(file_path):
+
     """Read a WAV audio file using soundfile and return raw audio bytes and sample rate."""
     audio,sample_rate = sf.read(file_path, dtype='int16')
     return audio,sample_rate
