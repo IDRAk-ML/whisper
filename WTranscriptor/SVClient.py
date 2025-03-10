@@ -189,7 +189,7 @@ class ASRClient:
 
     # import asyncio
 
-    import asyncio
+    # import asyncio
 
     def whisper_transcribe(self,audio_path):
         """
