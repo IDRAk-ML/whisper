@@ -189,6 +189,8 @@ class ASRClient:
 
     # import asyncio
 
+    import asyncio
+
     def whisper_transcribe(self,audio_path):
         """
         Synchronous wrapper for Whisper transcription
@@ -199,9 +201,14 @@ class ASRClient:
         Returns:
             str: Transcribed text
         """
-        # Create a new event loop
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        # Get the current running event loop
+        try:
+            # Try to get the current event loop first
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            # If no event loop exists, create a new one
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
         
         try:
             # Run the async function synchronously
@@ -216,9 +223,10 @@ class ASRClient:
             print('Whisper Transcript', transcript_data[1])
             return transcript_data[1]
         
-        finally:
-            # Close the event loop
-            loop.close()
+        except Exception as e:
+            print(f"Transcription error: {e}")
+            raise
+
 
 
 
