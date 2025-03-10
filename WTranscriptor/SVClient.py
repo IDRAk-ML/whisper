@@ -220,7 +220,7 @@ class ASRClient:
                         
                         
                         text = hal_check(entry["clean_text"])
-
+                        print('Text Here',text,len(text))
                         if len(text) <=1:
                             text = self.whisper_transcribe(audio_path=audio_path)
                         
