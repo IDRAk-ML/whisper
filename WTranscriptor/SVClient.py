@@ -178,9 +178,9 @@ class ASRClient:
     
 
     def whisper_transcribe(self,audio_path):
-        print('Little Wh')
+        print('Little Whisper')
         ids, transcript=transcript_generator(file_path=audio_path,sampling_rate=16000,file_mode=True)
-
+        print('Whisper Transcript',transcript)
         return transcript
 
 
