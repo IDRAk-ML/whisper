@@ -192,33 +192,14 @@ class ASRClient:
     # import asyncio
 
     async def whisper_transcribe(self,audio_path):
-        """
-        Synchronous wrapper for Whisper transcription
-        
-        Args:
-            audio_path (str): Path to the audio file to transcribe
-        
-        Returns:
-            str: Transcribed text
-        """
-        # Get the current running event loop
-        try:
-            # Try to get the current event loop first
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            # If no event loop exists, create a new one
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
         
         try:
             # Run the async function synchronously
-            transcript_data = loop.run_until_complete(
-                transcript_generator(
+            transcript_data = await transcript_generator(
                     file_path=audio_path, 
                     sampling_rate=16000, 
                     file_mode=True
                 )
-            )
             
             print('Whisper Transcript', transcript_data[1])
             return transcript_data[1]
