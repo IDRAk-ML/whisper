@@ -21,7 +21,7 @@ def transcribe_audio(file_path: str):
     buffer = io.BytesIO()
     sf.write(buffer, data, samplerate, format='WAV')
     buffer.seek(0)
-    
+     
     # Define the API URL
     url = f"http://{SERVER_ADDRESS}/transcribe_array"
     

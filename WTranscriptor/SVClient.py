@@ -8,7 +8,7 @@ from df.enhance import enhance, init_df, load_audio, save_audio
 from df.utils import download_file
 from WTranscriptor.webrtc_vadcustom import WebRTCVADSpeechDetector
 import re
-
+from server import transcript_generator
 
 def hal_check(text: str) -> str:
     text = text.strip().lower()  # Normalize text
@@ -175,7 +175,14 @@ class ASRClient:
         else:
             result = self.apply_silero_vad(audio_path)
         return result
-        
+    
+
+    def whisper_transcribe(self,audio_path):
+        print('Little Whisper')
+        ids, transcript=transcript_generator(file_path=audio_path,sampling_rate=16000,file_mode=True)
+
+        return transcript
+
 
     def transcribe_audio_array(self, audio_array, sample_rate=16000, lang="en"):
         """
@@ -213,6 +220,9 @@ class ASRClient:
                         
                         
                         text = hal_check(entry["clean_text"])
+
+                        if len(text) <=1:
+                            text = self.whisper_transcribe(audio_path=audio_path)
                         
                         return text
                         

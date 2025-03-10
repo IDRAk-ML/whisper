@@ -71,6 +71,11 @@ class ASR(object):
         #ids are model generated tokens id for the ASR
         return resp
 
+    async def asr_transcribe(self, data_torch, sample_rate):
+        wave=data_torch # get the wave data
+        transcript,ids= await self.model.asr_transcribe(wave=wave,sample_rate=sample_rate)
+        #ids are model generated tokens id for the ASR
+        return ids,transcript 
 if __name__ == "__main__":
     config = dict()
     config["cuda_device"] = "cpu"

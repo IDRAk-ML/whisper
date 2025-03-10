@@ -8,6 +8,13 @@ import numpy as np
 import uuid
 import asyncio
 import re
+
+def read_audio(self, file_path):
+    """Read a WAV audio file using soundfile and return raw audio bytes and sample rate."""
+    audio,sample_rate = sf.read(file_path, dtype='int16')
+    return audio,sample_rate
+
+
 def is_hallucination(transcript, repetition_threshold=2):
     # Split the transcript into words
     words = transcript.split()
@@ -70,6 +77,7 @@ def filter_hallucination(transcript):
     if is_hallucination(transcript=transcript):
         return ''
     return transcript
+
 def delete_file_if_exists(file_path):
     """Deletes the file at file_path if it exists."""
     if os.path.exists(file_path):

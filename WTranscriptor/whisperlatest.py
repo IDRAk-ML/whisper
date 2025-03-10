@@ -170,6 +170,29 @@ class WhisperTranscriptorAPI:
             # adding sense voice here
             
             return "",[]
+        
+    async def asr_transcribe(self,wave,sample_rate=16000):
+        if self.mac_device:
+            torch.mps.empty_cache()
+        generate_kwargs = {"task": 'transcribe', "language": '<|en|>',"temperature": 0.01,}
+        if self.model_path.split(".")[-1] == "en":
+            generate_kwargs.pop("task")
+            generate_kwargs.pop("language") 
+        
+        outputs = self.model(
+            wave,
+        chunk_length_s=15,
+        batch_size=self.batch_size,
+        generate_kwargs=generate_kwargs,
+        return_timestamps=False
+                )
+        transcription = filter_hallucination(outputs['text'])
+        print(transcription)
+        
+        print('Audio Length',len(wave)/16000)
+
+        return transcription,[]
+
     async def genereate_transcript_from_file(self, file_name):
         return 'method not implemented; for whisper use generate_transcript_numpy', []
 
