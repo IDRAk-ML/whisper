@@ -8,7 +8,7 @@ from df.enhance import enhance, init_df, load_audio, save_audio
 from df.utils import download_file
 from WTranscriptor.webrtc_vadcustom import WebRTCVADSpeechDetector
 import re
-from WTranscriptor.utils.utils import transcript_generator
+from WTranscriptor.utils.utils import transcript_generator,read_audio
 
 
 import asyncio
@@ -189,9 +189,11 @@ class ASRClient:
         print('Little Whisper')
 
         # Get the running event loop and execute the coroutine
+
+        wave,sr = read_audio(file_path=audio_data)
         loop = asyncio.get_running_loop()
         transcript_data = loop.run_until_complete(
-            transcript_generator(file_path=audio_path, sampling_rate=16000, file_mode=True)
+            transcript_generator(wave=wave, sampling_rate=sr, file_mode=True)
         )
 
         print('Whisper Transcript', transcript_data[1])  # Assuming transcript is at index 1
