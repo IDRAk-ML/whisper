@@ -172,7 +172,7 @@ async def transcript_generator(wave='',sampling_rate=16000,file_mode=False,langu
         return transcript
     else:
         model_name = config.get('model_name', 'whisper')
-        wave = read_audio(file_path=file_path)
+        wave,sr = read_audio(file_path=file_path)
         wave = wave / np.iinfo(np.int16).max
         print('Wave type After Scale',wave)
         if sampling_rate != 16000:
