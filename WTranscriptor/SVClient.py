@@ -184,13 +184,17 @@ class ASRClient:
         return result
     
 
-    def whisper_transcribe(self,audio_path):
+    def whisper_transcribe(self, audio_path):
         print('Little Whisper')
 
-        # Run the async function in an event loop
-        transcript_data = asyncio.run(_run_transcription(audio_path))
+        # Schedule the async task without blocking the event loop
+        future = asyncio.create_task(transcript_generator(file_path=audio_path, sampling_rate=16000, file_mode=True))
+        
+        # Run it in a separate coroutine and get the result
+        ids, transcript = asyncio.run_coroutine_threadsafe(future, asyncio.get_event_loop()).result()
 
-        print('Whisper Transcript', transcript_data[1])  # Assuming transcript is at index 1
+        print('Whisper Transcript', transcript)
+        return transcript
 
 
     def transcribe_audio_array(self, audio_array, sample_rate=16000, lang="en"):
