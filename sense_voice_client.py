@@ -19,7 +19,7 @@ def send_audio_to_asr(audio_files, keys, lang="auto"):
         "keys": ",".join(keys),
         "lang": lang
     }
-    
+     
     response = requests.post(API_URL, files=files, data=data)
     return response.json()
 

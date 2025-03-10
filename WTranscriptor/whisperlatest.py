@@ -116,8 +116,6 @@ class WhisperTranscriptorAPI:
         self.collect_chunks) = self.utils
 
         
-        
-    
     #-------------------- generate transcript from nmpy array ----------------
     #
 
