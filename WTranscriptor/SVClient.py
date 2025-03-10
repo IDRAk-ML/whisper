@@ -10,7 +10,7 @@ from WTranscriptor.webrtc_vadcustom import WebRTCVADSpeechDetector
 import re
 from WTranscriptor.utils.utils import transcript_generator,read_audio
 
-
+from functools import wraps
 import asyncio
 
 
@@ -189,19 +189,37 @@ class ASRClient:
 
     # import asyncio
 
-    def whisper_transcribe(self, audio_path):
-        print('Little Whisper')
+    def whisper_transcribe(audio_path):
+        """
+        Synchronous wrapper for Whisper transcription
+        
+        Args:
+            audio_path (str): Path to the audio file to transcribe
+        
+        Returns:
+            str: Transcribed text
+        """
+        # Create a new event loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        try:
+            # Run the async function synchronously
+            transcript_data = loop.run_until_complete(
+                transcript_generator(
+                    file_path=audio_path, 
+                    sampling_rate=16000, 
+                    file_mode=True
+                )
+            )
+            
+            print('Whisper Transcript', transcript_data[1])
+            return transcript_data[1]
+        
+        finally:
+            # Close the event loop
+            loop.close()
 
-        # Run the async function as a background task
-        future = asyncio.create_task(
-            transcript_generator(file_path=audio_path, sampling_rate=16000, file_mode=True)
-        )
-
-        # Wait for the result asynchronously
-        transcript_data = asyncio.run_coroutine_threadsafe(future, asyncio.get_running_loop()).result()
-
-        print('Whisper Transcript', transcript_data[1])  # Assuming transcript is at index 1
-        return transcript_data[1]
 
 
 
