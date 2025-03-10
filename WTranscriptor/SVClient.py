@@ -190,7 +190,7 @@ class ASRClient:
 
         # Get the running event loop and execute the coroutine
 
-        wave,sr = read_audio(file_path=audio_data)
+        wave,sr = read_audio(file_path=audio_path)
         loop = asyncio.get_running_loop()
         transcript_data = loop.run_until_complete(
             transcript_generator(wave=wave, sampling_rate=sr, file_mode=True)
