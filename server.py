@@ -11,7 +11,7 @@ import requests
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException, UploadFile, File
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from WTranscriptor.WhisperASR import ASR
+
 from WTranscriptor.utils.utils import *
 from WTranscriptor.classification_utils.utils import *
 from hallucination_filters import suppress_low
@@ -20,8 +20,7 @@ from config import config, HELPING_ASR_FLAG
 # Initialize FastAPI app
 app = FastAPI()
 
-# Initialize ASR model
-asr = ASR.get_instance(config)
+
 helping_asr = None
 if HELPING_ASR_FLAG:
     from WTranscriptor.SVClient import ASRClient
@@ -63,33 +62,6 @@ def filter_hal(txt: str) -> str:
 def check_am(file_audio: bytes) -> str:
     return ''  # Placeholder for external request logic
 
-async def transcript_generator(wave='',sampling_rate=16000,file_mode=False,language='en',file_path=None):
-
-    if not file_mode:
-        model_name = config.get('model_name','whisper')
-        wave = wave / np.iinfo(np.int16).max
-        if sampling_rate != 16000:
-            wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
-
-
-
-        transcript = [[],'']
-        if model_name == 'whisper':
-            transcript = await asr.get_transcript(wave,sample_rate=sampling_rate,enable_vad=config['enable_vad'])
-        else:
-            file_name = save_wav_sync(wave)
-            transcript = await asr.get_transcript_from_file(file_name=file_name)
-        return transcript
-    else:
-        model_name = config.get('model_name', 'whisper')
-        wave,sr = read_audio(file_path=file_path)
-        wave = wave / np.iinfo(np.int16).max
-        print('Wave type After Scale',wave)
-        if sampling_rate != 16000:
-            wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
-        
-        transcript = await asr.asr_transcribe(wave,sample_rate=16000)
-        return transcript
 
 @app.post("/transcribe_array")
 async def audio_to_numpy(file: bytes = File(...)):

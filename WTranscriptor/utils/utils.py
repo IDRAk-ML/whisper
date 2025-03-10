@@ -1,13 +1,16 @@
 import numpy as np
 import librosa
 import os
-
+from WTranscriptor.WhisperASR import ASR
 from concurrent.futures import ThreadPoolExecutor
 import soundfile as sf
 import numpy as np
 import uuid
 import asyncio
 import re
+
+from config import config, HELPING_ASR_FLAG
+
 
 def read_audio(self, file_path):
     """Read a WAV audio file using soundfile and return raw audio bytes and sample rate."""
@@ -144,4 +147,37 @@ def save_wav_sync(numpy_array, sample_rate=16000, filename = f"temp/{uuid.uuid4(
     filename = f"temp/{uuid.uuid4()}.wav"
     sf.write(filename, numpy_array, sample_rate)
     return filename
+
+
+
+# Initialize ASR model
+asr = ASR.get_instance(config)
+async def transcript_generator(wave='',sampling_rate=16000,file_mode=False,language='en',file_path=None):
+
+    if not file_mode:
+        model_name = config.get('model_name','whisper')
+        wave = wave / np.iinfo(np.int16).max
+        if sampling_rate != 16000:
+            wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
+
+
+
+        transcript = [[],'']
+        if model_name == 'whisper':
+            transcript = await asr.get_transcript(wave,sample_rate=sampling_rate,enable_vad=config['enable_vad'])
+        else:
+            file_name = save_wav_sync(wave)
+            transcript = await asr.get_transcript_from_file(file_name=file_name)
+        return transcript
+    else:
+        model_name = config.get('model_name', 'whisper')
+        wave,sr = read_audio(file_path=file_path)
+        wave = wave / np.iinfo(np.int16).max
+        print('Wave type After Scale',wave)
+        if sampling_rate != 16000:
+            wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
+        
+        transcript = await asr.asr_transcribe(wave,sample_rate=16000)
+        return transcript
+
 
