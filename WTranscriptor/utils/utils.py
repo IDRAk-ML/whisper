@@ -181,3 +181,4 @@ async def transcript_generator(wave='',sampling_rate=16000,file_mode=False,langu
         return transcript
 
 
+

@@ -10,6 +10,13 @@ from WTranscriptor.webrtc_vadcustom import WebRTCVADSpeechDetector
 import re
 from WTranscriptor.utils.utils import transcript_generator
 
+
+import asyncio
+
+
+async def _run_transcription(audio_path):
+    return await transcript_generator(file_path=audio_path, sampling_rate=16000, file_mode=True)
+
 def hal_check(text: str) -> str:
     text = text.strip().lower()  # Normalize text
     text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
@@ -179,9 +186,11 @@ class ASRClient:
 
     def whisper_transcribe(self,audio_path):
         print('Little Whisper')
-        ids, transcript=transcript_generator(file_path=audio_path,sampling_rate=16000,file_mode=True)
-        print('Whisper Transcript',transcript)
-        return transcript
+
+        # Run the async function in an event loop
+        transcript_data = asyncio.run(_run_transcription(audio_path))
+
+        print('Whisper Transcript', transcript_data[1])  # Assuming transcript is at index 1
 
 
     def transcribe_audio_array(self, audio_array, sample_rate=16000, lang="en"):
