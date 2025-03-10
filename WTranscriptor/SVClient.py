@@ -69,12 +69,9 @@ class ASRClient:
     
 
     def resample_audio(self,audio_array,orig_sr=16000,target_sr=16000):
-
         wave_file = audio_array
-        
         if orig_sr != target_sr:
             wave_file = librosa.resample(wave_file, orig_sr=orig_sr, target_sr=target_sr)
-
         return wave_file
     
 
@@ -140,7 +137,8 @@ class ASRClient:
             wave = self.resample_audio(wave,sr,16000)
 
         wave = torch.from_numpy(wave).to(device=self.device).float()
-        speech_timestamps = self.get_speech_timestamps(wave, self.vad_model, sampling_rate=16000,threshold=0.3)
+        speech_timestamps = self.get_speech_timestamps(wave, self.vad_model, sampling_rate=16000,threshold=0.3,
+                                                       min_silence_duration_ms=100)
         print(speech_timestamps)
         if speech_timestamps:
             wave1 = self.collect_chunks(speech_timestamps, wave)
