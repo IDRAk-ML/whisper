@@ -9,7 +9,7 @@ from df.utils import download_file
 from WTranscriptor.webrtc_vadcustom import WebRTCVADSpeechDetector
 import re
 from WTranscriptor.utils.utils import transcript_generator,read_audio
-
+import concurrent.futures
 from functools import wraps
 import asyncio
 
@@ -191,7 +191,7 @@ class ASRClient:
 
     # import asyncio
 
-    def whisper_transcribe(self,audio_path):
+    async def whisper_transcribe(self,audio_path):
         """
         Synchronous wrapper for Whisper transcription
         
@@ -232,7 +232,7 @@ class ASRClient:
 
 
 
-    def transcribe_audio_array(self, audio_array, sample_rate=16000, lang="en"):
+    async def transcribe_audio_array(self, audio_array, sample_rate=16000, lang="en"):
         """
         Converts a NumPy array to a WAV file, sends it to ASR API, and returns only the transcript.
 
@@ -269,7 +269,7 @@ class ASRClient:
                     text = hal_check(entry["clean_text"])
                     print('Text Here',text,len(text))
                     if len(text) <1:
-                        text = self.whisper_transcribe(audio_path=audio_path)
+                        text = await self.whisper_transcribe(audio_path=audio_path)
                     
                     return text
                         
