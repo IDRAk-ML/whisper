@@ -214,17 +214,16 @@ class ASRClient:
             for entry in response["result"]:
                 if entry.get("key") == key and "clean_text" in entry:
                     
-                    if _:
-                        return self.filter_hallucination(entry["clean_text"])
-                    else:
-                        
-                        
-                        text = hal_check(entry["clean_text"])
-                        print('Text Here',text,len(text))
-                        if len(text) <=1:
-                            text = self.whisper_transcribe(audio_path=audio_path)
-                        
-                        return text
+                    
+                    text = self.filter_hallucination(entry["clean_text"])
+                    
+
+                    text = hal_check(entry["clean_text"])
+                    print('Text Here',text,len(text))
+                    if len(text) <1:
+                        text = self.whisper_transcribe(audio_path=audio_path)
+                    
+                    return text
                         
         return ""  # Return empty string if transcript is not found
 
