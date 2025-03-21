@@ -252,7 +252,7 @@ class ASRClient:
         audio_path = self.save_audio(audio_array, f"{key}.wav", sample_rate)
 
         # denoise here
-        audio_path = self.denoise_audio(audio_path)
+        # audio_path = self.denoise_audio(audio_path)
 
         # audio_path,_ = self.apply_vad(audio_path)
 
