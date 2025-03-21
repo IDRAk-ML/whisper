@@ -79,7 +79,7 @@ class ASRClient:
         if text == 'ju' or text =='y' or text =='i':
             return ''
         return text
-    
+     
     
     
 
@@ -134,6 +134,27 @@ class ASRClient:
             }
             response = requests.post(self.api_url, files=files, data=data)
             return response.json()
+        
+
+    def send_audio_to_whisper_at(self,audio_path):
+
+        def transcribe_audio(file_path):
+            url = "http://148.251.22.99:9007/transcribe/"
+            files = {'file': ('audio.wav', open(file_path, 'rb'), 'audio/x-wav')}
+            data = {
+                'audio_tagging_time_resolution': 10,
+                'temperature': 0.01,
+                'no_speech_threshold': 0.4
+            }
+            headers = {'accept': 'application/json'}
+            
+            response = requests.post(url, files=files, data=data, headers=headers)
+            return response.json()
+        
+        results = transcribe_audio(file_path=audio_path)
+
+        return results['text']
+    
     def denoise_audio(self,audio_path):
         print('[+] Denoise Audio')
         audio, _ = load_audio(audio_path, sr=self.df_state.sr())
@@ -231,30 +252,33 @@ class ASRClient:
         # denoise here
         audio_path = self.denoise_audio(audio_path)
 
-        audio_path,_ = self.apply_vad(audio_path)
+        # audio_path,_ = self.apply_vad(audio_path)
 
-        if not audio_path:
-            return ""
+        # if not audio_path:
+        #     return ""
         
-        response = self.send_audio_to_asr(audio_path, key, lang)
-        print("[-] SV Client is predicting",response)
-        # Extract transcript
-        if "result" in response and isinstance(response["result"], list):
-            for entry in response["result"]:
-                if entry.get("key") == key and "clean_text" in entry:
+        # response = self.send_audio_to_asr(audio_path, key, lang)
+        # print("[-] SV Client is predicting",response)
+        # # Extract transcript
+        # if "result" in response and isinstance(response["result"], list):
+        #     for entry in response["result"]:
+        #         if entry.get("key") == key and "clean_text" in entry:
                     
                     
-                    text = self.filter_hallucination(entry["clean_text"])
+        #             text = self.filter_hallucination(entry["clean_text"])
                     
 
-                    text = hal_check(entry["clean_text"])
-                    print('Text Here',text,len(text))
-                    if len(text) <1:
-                        text = await self.whisper_transcribe(audio_path=audio_path)
+        #             text = hal_check(entry["clean_text"])
+        #             print('Text Here',text,len(text))
+        #             if len(text) <1:
+        #                 text = await self.whisper_transcribe(audio_path=audio_path)
                     
-                    return text
+        #             return text
                         
-        return ""  # Return empty string if transcript is not found
+        # return ""  # Return empty string if transcript is not found
+        result_at = self.send_audio_to_whisper_at(audio_path=audio_path)
+        print('Result of AT',result_at)
+        return result_at
 
 
 # Example usage
