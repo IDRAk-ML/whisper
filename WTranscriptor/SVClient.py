@@ -22,11 +22,11 @@ def hal_check(text: str) -> str:
     text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
 
     # If text length is greater than 5, return as is
-    if len(text) >= 5:
+    if len(text) >= 8:
         return text  
 
     keep = ['hel', 'ye', 'hi', 'yes', 'yup', 'um', 'hello', 'hey', 'he']
-    hal_word = ['it', 'the', 'ug', '-', 'ok']
+    hal_word = ['end', 'the', 'bee']
 
     # Check if any 'keep' words exist in the text
     for k in keep:
@@ -152,8 +152,10 @@ class ASRClient:
             return response.json()
         
         results = transcribe_audio(file_path=audio_path)
+        text = results["text"]
 
-        return results['text']
+        text  = hal_check(text)
+        return text
     
     def denoise_audio(self,audio_path):
         print('[+] Denoise Audio')
