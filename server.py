@@ -11,7 +11,6 @@ import requests
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException, UploadFile, File
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-
 from WTranscriptor.utils.utils import *
 from WTranscriptor.classification_utils.utils import *
 from hallucination_filters import suppress_low
@@ -58,10 +57,6 @@ def compress_data(data):
 def filter_hal(txt: str) -> str:
     hal = ['you', 'your', 'video', 'thank','bye']
     return '' if len(txt) < 6 and any(word in txt for word in hal) else txt
-
-import requests
-
-
 
 
 
