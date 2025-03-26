@@ -135,7 +135,7 @@ class ASRClient:
             response = requests.post(self.api_url, files=files, data=data)
             return response.json()
         
-
+        
     def send_audio_to_whisper_at(self,audio_path):
 
         def transcribe_audio(file_path):
