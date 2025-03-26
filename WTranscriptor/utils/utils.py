@@ -8,6 +8,9 @@ import numpy as np
 import uuid
 import asyncio
 import re
+from io import BytesIO
+import tempfile
+
 
 from config import config, HELPING_ASR_FLAG
 
@@ -183,3 +186,45 @@ async def transcript_generator(wave='',sampling_rate=16000,file_mode=False,langu
 
 
 
+def save_byte_to_temp_file(file_audio: bytes):
+    """
+    Save incoming audio bytes as a temporary WAV file with 16kHz sample rate
+    and return the path to the temporary file.
+    
+    Args:
+        file_audio (bytes): Raw audio data in bytes
+        
+    Returns:
+        str: Path to the temporary WAV file
+    """
+    try:
+        # Create a temporary file with .wav extension
+        temp_file = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+        temp_file_path = temp_file.name
+        temp_file.close()  # Close the file so we can reopen it for writing
+        
+        # Load the audio from bytes and resample to 16kHz
+        audio_data, original_sr = librosa.load(BytesIO(file_audio), sr=None)
+        
+        # Resample to 16kHz
+        if original_sr != 16000:
+            resampled_audio = librosa.resample(audio_data, orig_sr=original_sr, target_sr=16000)
+        else:
+            resampled_audio = audio_data
+        
+        # Save as WAV with 16kHz sample rate
+        sf.write(temp_file_path, resampled_audio, 16000, subtype='PCM_16')
+        
+        # Here you would call your detect_smart_am function or other processing
+        # result = detect_smart_am(temp_file_path)
+        
+        # Return the path to the temporary file
+        return temp_file_path
+        
+    except Exception as e:
+        # Handle exceptions and clean up if necessary
+        if 'temp_file_path' in locals() and os.path.exists(temp_file_path):
+            os.unlink(temp_file_path)
+        print(f"Error processing audio file: {str(e)}")
+        return None
+        
