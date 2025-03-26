@@ -19,3 +19,4 @@ config['model_path'] = BASE_PATH + config['model_path']
 
 
 HELPING_ASR_FLAG = True
+SMART_AM_CHECK = False

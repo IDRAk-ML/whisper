@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from WTranscriptor.utils.utils import *
 from WTranscriptor.classification_utils.utils import *
 from hallucination_filters import suppress_low
-from config import config, HELPING_ASR_FLAG
+from config import config, HELPING_ASR_FLAG,SMART_AM_CHECK
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -62,15 +62,15 @@ def filter_hal(txt: str) -> str:
 
 
 def check_am(file_audio: bytes) -> bool:
-    url = "http://localhost:8034/detect-smart-am/"
-    temp_file = save_byte_to_temp_file(file_audio=file_audio)
-    if tempfile:
-        files = {"file": open(temp_file, "rb")}
-        response = requests.post(url, files=files)
-        response = response.json()
-        return response.get("match_detected",False) 
+    if SMART_AM_CHECK: 
+        url = "http://localhost:8034/detect-smart-am/"
+        temp_file = save_byte_to_temp_file(file_audio=file_audio)
+        if tempfile:
+            files = {"file": open(temp_file, "rb")}
+            response = requests.post(url, files=files)
+            response = response.json()
+            return response.get("match_detected",False) 
 
-    print('[-] Check AM Did Not Work')
     return False  # Placeholder for external request logic
 
 
