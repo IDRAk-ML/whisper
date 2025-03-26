@@ -12,7 +12,7 @@ from WTranscriptor.utils.utils import transcript_generator,read_audio
 import concurrent.futures
 from functools import wraps
 import asyncio
-
+from config import WHISPER_AT_SERVER_URL
 
 async def _run_transcription(audio_path):
     return await transcript_generator(file_path=audio_path, sampling_rate=16000, file_mode=True)
@@ -139,7 +139,7 @@ class ASRClient:
     def send_audio_to_whisper_at(self,audio_path):
 
         def transcribe_audio(file_path):
-            url = "http://148.251.22.99:9007/transcribe/"
+            url = f"http://{WHISPER_AT_SERVER_URL}:9007/transcribe/"
             files = {'file': ('audio.wav', open(file_path, 'rb'), 'audio/x-wav')}
             data = {
                 'audio_tagging_time_resolution': 10,
