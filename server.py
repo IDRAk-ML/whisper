@@ -59,8 +59,24 @@ def filter_hal(txt: str) -> str:
     hal = ['you', 'your', 'video', 'thank','bye']
     return '' if len(txt) < 6 and any(word in txt for word in hal) else txt
 
-def check_am(file_audio: bytes) -> str:
-    return ''  # Placeholder for external request logic
+import requests
+
+
+
+
+
+
+def check_am(file_audio: bytes) -> bool:
+    url = "http://0.0.0.0:8034/detect-smart-am/"
+    temp_file = save_byte_to_temp_file(file_audio=file_audio)
+    if tempfile:
+        files = {"file": open(temp_file, "rb")}
+        response = requests.post(url, files=files)
+        response = response.json()
+        return response.get("match_detected",False) 
+
+    print('[-] Check AM Did Not Work')
+    return False  # Placeholder for external request logic
 
 
 @app.post("/transcribe_array")
