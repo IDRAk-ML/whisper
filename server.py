@@ -62,7 +62,7 @@ def filter_hal(txt: str) -> str:
 
 
 def check_am(file_audio: bytes) -> bool:
-    url = "http://0.0.0.0:8034/detect-smart-am/"
+    url = "http://localhost:8034/detect-smart-am/"
     temp_file = save_byte_to_temp_file(file_audio=file_audio)
     if tempfile:
         files = {"file": open(temp_file, "rb")}
