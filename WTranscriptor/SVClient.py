@@ -12,7 +12,7 @@ from WTranscriptor.utils.utils import transcript_generator,read_audio
 import concurrent.futures
 from functools import wraps
 import asyncio
-from config import WHISPER_AT_SERVER_URL
+from config import WHISPER_AT_SERVER_URL,HELPING_ASR_MODEL
 
 async def _run_transcription(audio_path):
     return await transcript_generator(file_path=audio_path, sampling_rate=16000, file_mode=True)
@@ -251,36 +251,44 @@ class ASRClient:
         key = str(uuid.uuid4())  # Generate a random UUID as the key
         audio_path = self.save_audio(audio_array, f"{key}.wav", sample_rate)
 
-        # denoise here
-        # audio_path = self.denoise_audio(audio_path)
+        selected_model_index = HELPING_ASR_MODEL.get('selected_model',0)
+        selected_model = HELPING_ASR_MODEL.get('model_list',['whisper_at','sensevoice'])[selected_model_index]
 
-        # audio_path,_ = self.apply_vad(audio_path)
+        if selected_model == 'sensevoice':
+            # denoise here
+            audio_path = self.denoise_audio(audio_path)
 
-        # if not audio_path:
-        #     return ""
-        
-        # response = self.send_audio_to_asr(audio_path, key, lang)
-        # print("[-] SV Client is predicting",response)
-        # # Extract transcript
-        # if "result" in response and isinstance(response["result"], list):
-        #     for entry in response["result"]:
-        #         if entry.get("key") == key and "clean_text" in entry:
-                    
-                    
-        #             text = self.filter_hallucination(entry["clean_text"])
-                    
+            audio_path,_ = self.apply_vad(audio_path)
 
-        #             text = hal_check(entry["clean_text"])
-        #             print('Text Here',text,len(text))
-        #             if len(text) <1:
-        #                 text = await self.whisper_transcribe(audio_path=audio_path)
-                    
-        #             return text
+            if not audio_path:
+                return ""
+            
+            response = self.send_audio_to_asr(audio_path, key, lang)
+            print("[-] SV Client is predicting",response)
+            # Extract transcript
+            if "result" in response and isinstance(response["result"], list):
+                for entry in response["result"]:
+                    if entry.get("key") == key and "clean_text" in entry:
                         
-        # return ""  # Return empty string if transcript is not found
-        result_at = self.send_audio_to_whisper_at(audio_path=audio_path)
-        print('Result of AT',result_at)
-        return result_at
+                        
+                        text = self.filter_hallucination(entry["clean_text"])
+                        
+
+                        text = hal_check(entry["clean_text"])
+                        print('Text Here',text,len(text))
+                        if len(text) <1:
+                            text = await self.whisper_transcribe(audio_path=audio_path)
+                        
+                        return text
+                            
+            return ""  # Return empty string if transcript is not found
+        elif selected_model == 'whisper_at':
+            result_at = self.send_audio_to_whisper_at(audio_path=audio_path)
+            print('Result of AT',result_at)
+            return result_at
+        
+        else:
+            return ""
 
 
 # Example usage
