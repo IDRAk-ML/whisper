@@ -70,7 +70,7 @@ def check_am(file_audio: bytes) -> bool:
             response = requests.post(url, files=files)
             response = response.json()
             return response.get("match_detected",False) 
-
+    
     return False  # Placeholder for external request logic
 
 
