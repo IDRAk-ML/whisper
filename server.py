@@ -15,7 +15,7 @@ from WTranscriptor.utils.utils import *
 from WTranscriptor.classification_utils.utils import *
 from hallucination_filters import suppress_low
 from config import config, HELPING_ASR_FLAG,SMART_AM_CHECK
-
+import io
 # Initialize FastAPI app
 app = FastAPI()
 
@@ -73,7 +73,32 @@ def check_am(file_audio: bytes) -> bool:
     
     return False  # Placeholder for external request logic
 
+@app.post("/transcribe_array1")
+async def audio_to_numpy(file: bytes = File(...)):
+    try:
+        audio_np, sampling_rate = sf.read(io.BytesIO(file), dtype='int16')
 
+        if sampling_rate != 16000:
+            raise HTTPException(status_code=400, detail=f"Expected 16000 Hz, but got {sampling_rate} Hz")
+        
+        print(f"[+] Detected Sampling Rate: {sampling_rate}")
+        print(f"[+] Audio shape: {audio_np.shape}")
+
+        am_result = check_am(file)
+        # audio_np = np.frombuffer(file, dtype=np.int16)
+        print('Wave type init',audio_np)
+        transcript = await transcript_generator(wave=audio_np, sampling_rate=16000)
+        txt = filter_hal(transcript[1])
+
+        if len(txt)<=1 and helping_asr:
+            txt = await helping_asr.transcribe_audio_array(audio_array=audio_np)
+
+        
+        print(f'[+] Transcript Sending {txt if len(txt) > 3 else "Nothing"}')
+        return {"message": "Conversion successful", "transcript": txt, "am_result": am_result}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
 @app.post("/transcribe_array")
 async def audio_to_numpy(file: bytes = File(...)):
     try:
