@@ -79,9 +79,10 @@ async def audio_to_numpy(file: bytes = File(...)):
         audio_np, sampling_rate = sf.read(io.BytesIO(file), dtype='int16')
 
         if sampling_rate != 16000:
-            raise HTTPException(status_code=400, detail=f"Expected 16000 Hz, but got {sampling_rate} Hz")
-        
-        print(f"[+] Detected Sampling Rate: {sampling_rate}")
+            # raise HTTPException(status_code=400, detail=f"Expected 16000 Hz, but got {sampling_rate} Hz")
+            audio_np = librosa.resample(audio_np, orig_sr=sampling_rate, target_sr=16000)
+
+            print(f"[+] Resampled: {sampling_rate}")
         print(f"[+] Audio shape: {audio_np.shape}")
 
         am_result = check_am(file)
