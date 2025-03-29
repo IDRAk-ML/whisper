@@ -68,8 +68,9 @@ def check_am(file_audio: bytes) -> bool:
         if tempfile:
             files = {"file": open(temp_file, "rb")}
             response = requests.post(url, files=files)
-            print('AM Response',response)
+            
             response = response.json()
+            print('AM Response',response)
             return response.get("match_detected",False) 
     
     return False  # Placeholder for external request logic
