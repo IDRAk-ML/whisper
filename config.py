@@ -20,6 +20,6 @@ config['model_path'] = BASE_PATH + config['model_path']
 
 HELPING_ASR_FLAG = True
 HELPING_ASR_MODEL = {'model_list':['whisper_at','sensevoice'],'selected_model':0}
-SMART_AM_CHECK = False
+SMART_AM_CHECK = True
 
 WHISPER_AT_SERVER_URL = 'localhost'
