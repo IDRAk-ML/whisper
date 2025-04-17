@@ -165,12 +165,12 @@ async def transcript_generator(wave='',sampling_rate=16000,file_mode=False,langu
             wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
 
 
-
+        file_name = save_wav_sync(wave)
         transcript = [[],'']
         if model_name == 'whisper':
             transcript = await asr.get_transcript(wave,sample_rate=sampling_rate,enable_vad=config['enable_vad'])
         else:
-            file_name = save_wav_sync(wave)
+            # file_name = save_wav_sync(wave)
             transcript = await asr.get_transcript_from_file(file_name=file_name)
         return transcript
     else:
