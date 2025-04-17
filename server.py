@@ -15,7 +15,7 @@ from WTranscriptor.utils.utils import *
 from WTranscriptor.classification_utils.utils import *
 from hallucination_filters import suppress_low
 from config import config, HELPING_ASR_FLAG,SMART_AM_CHECK
-
+import io
 # Initialize FastAPI app
 app = FastAPI()
 
@@ -68,12 +68,50 @@ def check_am(file_audio: bytes) -> bool:
         if tempfile:
             files = {"file": open(temp_file, "rb")}
             response = requests.post(url, files=files)
+            
             response = response.json()
+            print('AM Response',response)
             return response.get("match_detected",False) 
     
     return False  # Placeholder for external request logic
 
+@app.post("/transcribe_array1")
+async def audio_to_numpy(file: bytes = File(...)):
+    try:
+        # Step 1: Load as int16
+        audio_np, sampling_rate = sf.read(io.BytesIO(file), dtype='int16')
 
+        if sampling_rate != 16000:
+            print(f"[+] Original SR: {sampling_rate}, resampling to 16000 Hz")
+
+            # Step 2: Convert to float32 and normalize
+            audio_float = audio_np.astype(np.float32)
+            audio_float /= np.max(np.abs(audio_float)) + 1e-6  # avoid division by zero
+
+            # Step 3: Resample
+            audio_resampled = librosa.resample(audio_float, orig_sr=sampling_rate, target_sr=16000)
+
+            # Step 4: Convert back to int16
+            audio_np = (audio_resampled * 32767).astype(np.int16)
+            sampling_rate = 16000
+
+        print(f"[+] Final Audio Shape: {audio_np.shape}, Dtype: {audio_np.dtype}")
+
+        # Now safe to proceed with your pipeline
+        am_result = check_am(file)
+
+        transcript = await transcript_generator(wave=audio_np, sampling_rate=16000)
+        txt = filter_hal(transcript[1])
+
+        if len(txt) <= 1 and helping_asr:
+            txt = await helping_asr.transcribe_audio_array(audio_array=audio_np)
+
+        print(f'[+] Transcript Sending {txt if len(txt) > 3 else "Nothing"}')
+        return {"message": "Conversion successful", "transcript": txt, "am_result": am_result}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
 @app.post("/transcribe_array")
 async def audio_to_numpy(file: bytes = File(...)):
     try:
