@@ -22,6 +22,8 @@ HELPING_ASR_FLAG = True
 HELPING_ASR_MODEL = {'model_list':['whisper_at','sensevoice'],'selected_model':0}
 SMART_AM_CHECK = True
 
-WHISPER_AT_SERVER_URL = 'localhost'
+
+WHISPER_AT_SERVER_URL = 'localhost' # if not docker set tup localhost
+
 
 ENV_DOCKER = True
