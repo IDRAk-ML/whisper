@@ -135,7 +135,10 @@ class WhisperTranscriptorAPI:
          
         t1 = timeit.default_timer()
         if enable_vad:
-            wave = torch.from_numpy(wave).to(device=self.device).float()
+            # wave = torch.from_numpy(wave).to(device=self.device).float()
+            dtype = torch.float16 if self.device == "cuda" else torch.float32
+            wave = torch.from_numpy(wave).to(device=self.device).to(dtype=dtype)
+
             speech_timestamps = self.get_speech_timestamps(wave, self.vad_model, sampling_rate=16000,threshold=0.35,
                                                            min_silence_duration_ms=100,min_speech_duration_ms=100)
             # speech_timestamps = True

@@ -15,6 +15,10 @@ RUN pip install -r requirements.txt
 # Preload DeepFilterNet model to avoid runtime zip errors
 RUN python3 -c "from df.enhance import init_df; init_df()"
 
+# Pre-clone silero-vad to torch hub location
+RUN mkdir -p /root/.cache/torch/hub && \
+    git clone https://github.com/snakers4/silero-vad.git /root/.cache/torch/hub/snakers4_silero-vad_master
+
 RUN mkdir -p /workspace/temp
 
 EXPOSE 9005

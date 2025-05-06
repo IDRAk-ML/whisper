@@ -25,5 +25,6 @@ SMART_AM_CHECK = True
 
 WHISPER_AT_SERVER_URL = 'localhost' # if not docker set tup localhost
 
-
+WHISPER_AT_DOCKER_NETWORK = 'backend9007'
+AMD_DOCKER_NETWORK = 'backend8034'
 ENV_DOCKER = True

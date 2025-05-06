@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from WTranscriptor.utils.utils import *
 from WTranscriptor.classification_utils.utils import *
 from hallucination_filters import suppress_low
-from config import config, HELPING_ASR_FLAG,SMART_AM_CHECK,ENV_DOCKER
+from config import config, HELPING_ASR_FLAG,SMART_AM_CHECK,ENV_DOCKER,AMD_DOCKER_NETWORK
 import io
 # Initialize FastAPI app
 app = FastAPI()
@@ -64,7 +64,7 @@ def filter_hal(txt: str) -> str:
 def check_am(file_audio: bytes) -> bool:
     if SMART_AM_CHECK: 
         if ENV_DOCKER:
-            url = "http://backend8034:8034/detect-smart-am/"
+            url = f"http://{AMD_DOCKER_NETWORK}:8034/detect-smart-am/"
         else:
             url = "http://127.0.0.1:8034/detect-smart-am/" 
         temp_file = save_byte_to_temp_file(file_audio=file_audio)

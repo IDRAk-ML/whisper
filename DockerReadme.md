@@ -26,9 +26,20 @@ sudo systemctl restart docker
 docker run --rm --gpus all nvidia/cuda:12.6.2-runtime-ubuntu22.04 nvidia-smi
 ```
 
+
+Create docker network
+docker network create whisper-net
+run amd_server
+docker run -d --name backend8034 --network whisper-net -p 8034:8034 your-8034-image
+
+
 1. Run like this.
 ```
 docker build -t whisper-fastapi .
-docker run --rm --gpus all -p 9005:9005 -v $(pwd)/temp:/workspace/temp whisper-fastapi
+docker run --rm --gpus all \
+  --network whisper-net \
+  -p 9005:9005 \
+  -v $(pwd)/temp:/workspace/temp \
+  whisper-fastapi
 ```
 
