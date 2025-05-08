@@ -234,3 +234,41 @@ async def websocket_persistent_endpoint(websocket: WebSocket):
         print(f"Error: {e}")
     finally:
         await websocket.close()
+
+@app.get("/health", tags=["Health Check"])
+async def health_check():
+    try:
+        file_path = "./WTranscriptor/audios/2sec.wav"
+
+        if not os.path.exists(file_path):
+            return {"status": "error", "message": "Health check audio file not found."}
+        am_result = check_am(file_path)
+        # Load and preprocess audio
+        audio_np, sr = sf.read(file_path, dtype='int16')
+
+        if sr != 16000:
+            audio_np = librosa.resample(audio_np.astype(np.float32), orig_sr=sr, target_sr=16000)
+            audio_np = (audio_np * 32767).astype(np.int16)
+            sr = 16000
+
+        # Transcribe
+        transcript = await transcript_generator(wave=audio_np, sampling_rate=sr)
+        filtered_transcript = filter_hal(transcript[1])
+
+        # Fallback to helper ASR if needed
+        if len(filtered_transcript) <= 1 and helping_asr:
+            filtered_transcript = await helping_asr.transcribe_audio_array(audio_array=audio_np)
+
+        return {
+            "status": "ok",
+            "message": "Server is healthy",
+            "transcript": filtered_transcript,
+            "am_check":am_result
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Health check failed: {str(e)}",
+            "am_check":""
+        }
