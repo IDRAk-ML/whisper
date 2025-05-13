@@ -76,9 +76,11 @@ def check_am(file_audio: bytes) -> bool:
             
             response = response.json()
             print('AM Response',response)
-            return response.get("match_detected",False) 
+            data = {"beep_results":response.get("beep_results",(False,[])),"match_detected":response.get("match_detected",False)}
+            return data 
+    data = {"beep_results":(False,[]),"match_detected":False}
     
-    return False  # Placeholder for external request logic
+    return data  # Placeholder for external request logic
 
 @app.post("/transcribe_array1")
 async def audio_to_numpy(file: bytes = File(...)):
