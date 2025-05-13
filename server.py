@@ -6,6 +6,7 @@ import string
 import os
 import numpy as np
 import librosa
+from fastapi import status
 import soundfile as sf
 import requests
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException, UploadFile, File
@@ -16,6 +17,7 @@ from WTranscriptor.classification_utils.utils import *
 from hallucination_filters import suppress_low
 from config import config, HELPING_ASR_FLAG,SMART_AM_CHECK,ENV_DOCKER,AMD_DOCKER_NETWORK
 import io
+import signal
 # Initialize FastAPI app
 app = FastAPI()
 
@@ -260,15 +262,20 @@ async def health_check():
             filtered_transcript = await helping_asr.transcribe_audio_array(audio_array=audio_np)
 
         return {
-            "status": "ok",
+            "status": "200",
             "message": "Server is healthy",
             "transcript": filtered_transcript,
             "am_check":am_result
         }
 
     except Exception as e:
-        return {
-            "status": "error",
-            "message": f"Health check failed: {str(e)}",
-            "am_check":""
-        }
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Health check failed: {str(e)}"
+        )
+
+@app.post("/restart")
+async def restart(request: Request):
+    # Perform any necessary cleanup here
+    os.kill(os.getpid(), signal.SIGTERM)
+    return {"message": "Server is restarting..."}
