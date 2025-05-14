@@ -1,4 +1,5 @@
 # Configuration for ASR
+import os
 config = {
     "sample_rate": 16000,
     "duration_threshold": 3,
@@ -20,7 +21,7 @@ config['model_path'] = BASE_PATH + config['model_path']
 
 HELPING_ASR_FLAG = True
 HELPING_ASR_MODEL = {'model_list':['whisper_at','sensevoice'],'selected_model':0}
-SMART_AM_CHECK = True
+SMART_AM_CHECK = os.getenv('SMART_AM_CHECK',False)
 
 
 WHISPER_AT_SERVER_URL = 'localhost' # if not docker set tup localhost

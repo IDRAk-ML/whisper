@@ -23,4 +23,5 @@ RUN mkdir -p /workspace/temp
 
 EXPOSE 9005
 
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "9005", "--workers", "4"]
+# CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "9005", "--workers", "6"]
+CMD ["sh", "-c", "uvicorn server:app --host 0.0.0.0 --port 9005 --workers ${UVICORN_WORKERS:-4}"]

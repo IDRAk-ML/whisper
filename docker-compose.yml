@@ -1,8 +1,31 @@
+# version: "3.9"
+
+# services:
+#   whisper-fastapi:
+#     image: whisper-fastapi
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     ports:
+#       - "9005:9005"
+#     volumes:
+#       - ./temp:/workspace/temp
+#     deploy:
+#       resources:
+#         reservations:
+#           devices:
+#             - driver: nvidia
+#               count: all
+#               capabilities: [gpu]
+#     extra_hosts:
+#       - "host.docker.internal:host-gateway"
+#     restart: unless-stopped
+
 version: "3.9"
 
 services:
   whisper-fastapi:
-    image: whisper-fastapi
+    image: whisper-fastapi-medium
     build:
       context: .
       dockerfile: Dockerfile
@@ -20,3 +43,6 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+    environment:
+      UVICORN_WORKERS: 6  # Set your preferred number of workers here
+      SMART_AM_CHECK: False # True or False # if u need to check smart am or not
