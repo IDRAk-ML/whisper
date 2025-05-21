@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from WTranscriptor.utils.utils import *
 from WTranscriptor.classification_utils.utils import *
 from hallucination_filters import suppress_low
-from config import config, HELPING_ASR_FLAG,SMART_AM_CHECK,ENV_DOCKER,AMD_DOCKER_NETWORK
+from config import config, HELPING_ASR_FLAG,SMART_AM_CHECK,ENV_DOCKER,AMD_SERVER_ADDRESS
 import io
 import signal
 # Initialize FastAPI app
@@ -66,9 +66,9 @@ def filter_hal(txt: str) -> str:
 def check_am(file_audio: bytes) -> bool:
     if SMART_AM_CHECK: 
         if ENV_DOCKER:
-            url = f"http://{AMD_DOCKER_NETWORK}:8034/detect-smart-am/"
+            url = f"http://{AMD_SERVER_ADDRESS}/detect-smart-am/"
         else:
-            url = "http://127.0.0.1:8034/detect-smart-am/" 
+            url = f"http://{AMD_SERVER_ADDRESS}/detect-smart-am/"
         temp_file = save_byte_to_temp_file(file_audio=file_audio)
         if tempfile:
             files = {"file": open(temp_file, "rb")}
@@ -76,10 +76,10 @@ def check_am(file_audio: bytes) -> bool:
             
             response = response.json()
             print('AM Response',response)
-            # data = {"beep_results":response.get("beep_results",(False,[])),"match_detected":response.get("match_detected",False)}
-            
+            data = {"beep_results":response.get("beep_results",(False,[])),"match_detected":response.get("match_detected",False)}
+             
             return response.get('match_detected',False) 
-    # data = {"beep_results":(False,[]),"match_detected":False}
+    data = {"beep_results":(False,[]),"match_detected":False}
     
     return False  # Placeholder for external request logic
 
@@ -247,9 +247,15 @@ async def health_check():
 
         if not os.path.exists(file_path):
             return {"status": "error", "message": "Health check audio file not found."}
-        am_result = check_am(file_path)
+
+        # Read file as bytes
+        with open(file_path, "rb") as f:
+            audio_bytes = f.read()
+
+        am_result = check_am(audio_bytes)
+
         # Load and preprocess audio
-        audio_np, sr = sf.read(file_path, dtype='int16')
+        audio_np, sr = sf.read(io.BytesIO(audio_bytes), dtype='int16')
 
         if sr != 16000:
             audio_np = librosa.resample(audio_np.astype(np.float32), orig_sr=sr, target_sr=16000)
@@ -268,7 +274,7 @@ async def health_check():
             "status": "200",
             "message": "Server is healthy",
             "transcript": filtered_transcript,
-            "am_check":am_result
+            "am_check": am_result
         }
 
     except Exception as e:
@@ -282,3 +288,57 @@ async def restart(request: Request):
     # Perform any necessary cleanup here
     os.kill(os.getpid(), signal.SIGTERM)
     return {"message": "Server is restarting..."}
+
+
+@app.get("/info", tags=["System Info"])
+async def system_info():
+    info = {
+        "HELPING_ASR_FLAG": HELPING_ASR_FLAG,
+        "SMART_AM_CHECK": SMART_AM_CHECK,
+        "ENV_DOCKER": ENV_DOCKER,
+        "AMD_SERVER_ADDRESS": AMD_SERVER_ADDRESS,
+        "helping_asr_connected": False,
+        "amd_server_status": "unknown",
+    }
+
+    try:
+        file_path = "./WTranscriptor/audios/2sec.wav"
+        if not os.path.exists(file_path):
+            return {"status": "error", "message": "Test audio file not found."}
+
+        with open(file_path, "rb") as f:
+            audio_bytes = f.read()
+
+        # ======== Helping ASR check ========
+        if helping_asr:
+            try:
+                audio_np, sr = sf.read(io.BytesIO(audio_bytes), dtype='int16')
+                if sr != 16000:
+                    audio_np = librosa.resample(audio_np.astype(np.float32), orig_sr=sr, target_sr=16000)
+                    audio_np = (audio_np * 32767).astype(np.int16)
+                result = await helping_asr.transcribe_audio_array(audio_array=audio_np)
+                info["helping_asr_connected"] = isinstance(result, str) and len(result.strip()) > 0
+            except Exception as e:
+                info["helping_asr_error"] = str(e)
+
+        # ======== AMD server check ========
+        if SMART_AM_CHECK:
+            try:
+                temp_file = save_byte_to_temp_file(file_audio=audio_bytes)
+                if temp_file:
+                    files = {"file": open(temp_file, "rb")}
+                    url = f"http://{AMD_SERVER_ADDRESS}/detect-smart-am/"
+                    response = requests.post(url, files=files)
+                    json_data = response.json()
+                    info["amd_server_status"] = "online" if response.status_code == 200 else "offline"
+                    info["amd_server_response"] = json_data
+                    files["file"].close()
+                    os.remove(temp_file)
+            except Exception as e:
+                info["amd_server_status"] = "offline or error"
+                info["amd_server_error"] = str(e)
+
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Info check failed: {str(e)}")
+
+    return JSONResponse(content=info)
