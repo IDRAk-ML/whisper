@@ -156,8 +156,9 @@ def save_wav_sync(numpy_array, sample_rate=16000, filename = f"temp/{uuid.uuid4(
 
 # Initialize ASR model
 asr = ASR.get_instance(config)
-async def transcript_generator(wave='',sampling_rate=16000,file_mode=False,language='en',file_path=None):
-
+async def transcript_generator(wave='',sampling_rate=16000,file_mode=False,language='en',file_path=None,request_id=''):
+    
+    print(f"[+] - {request_id} - Transcribing audio...")
     if not file_mode:
         model_name = config.get('model_name','whisper')
         wave = wave / np.iinfo(np.int16).max
@@ -177,7 +178,7 @@ async def transcript_generator(wave='',sampling_rate=16000,file_mode=False,langu
         model_name = config.get('model_name', 'whisper')
         wave,sr = read_audio(file_path=file_path)
         wave = wave / np.iinfo(np.int16).max
-        print('Wave type After Scale',wave)
+        # print('Wave type After Scale',wave)
         if sampling_rate != 16000:
             wave = librosa.resample(wave, orig_sr=sampling_rate, target_sr=16000)
         
@@ -227,4 +228,13 @@ def save_byte_to_temp_file(file_audio: bytes):
             os.unlink(temp_file_path)
         print(f"Error processing audio file: {str(e)}")
         return None
-        
+
+import uuid
+def generate_random_id():
+    """
+    Generate a random UUID4 string.
+    
+    Returns:
+        str: A random UUID4 string.
+    """
+    return str(uuid.uuid4()) 

@@ -18,6 +18,8 @@ from hallucination_filters import suppress_low
 from config import config, HELPING_ASR_FLAG,SMART_AM_CHECK,ENV_DOCKER,AMD_SERVER_ADDRESS
 import io
 import signal
+import traceback
+
 # Initialize FastAPI app
 app = FastAPI()
 
@@ -63,35 +65,41 @@ def filter_hal(txt: str) -> str:
 
 
 
-def check_am(file_audio: bytes) -> bool:
+def check_am(file_audio: bytes,request_id='') -> bool:
+
     if SMART_AM_CHECK: 
         if ENV_DOCKER:
             url = f"http://{AMD_SERVER_ADDRESS}/detect-smart-am/"
         else:
             url = f"http://{AMD_SERVER_ADDRESS}/detect-smart-am/"
+
+        
         temp_file = save_byte_to_temp_file(file_audio=file_audio)
         if tempfile:
             files = {"file": open(temp_file, "rb")}
+            print(f"[*] - {request_id} Sending audio to AMD server for AM check")
             response = requests.post(url, files=files)
-            
             response = response.json()
-            print('AM Response',response)
+            # print('AM Response',response)
+
             data = {"beep_results":response.get("beep_results",(False,[])),"match_detected":response.get("match_detected",False)}
-             
+            
             return response.get('match_detected',False) 
     data = {"beep_results":(False,[]),"match_detected":False}
     
     return False  # Placeholder for external request logic
 
 @app.post("/transcribe_array1")
-async def audio_to_numpy(file: bytes = File(...)):
+async def audio_to_numpy(file: bytes = File(...),request_id =  ""):
     try:
+        if len(request_id) < 1:
+            request_id = generate_random_id()
+        
         # Step 1: Load as int16
         audio_np, sampling_rate = sf.read(io.BytesIO(file), dtype='int16')
 
         if sampling_rate != 16000:
-            print(f"[+] Original SR: {sampling_rate}, resampling to 16000 Hz")
-
+            print(f"[*] - {request_id} Original SR: {sampling_rate}, resampling to 16000 Hz")
             # Step 2: Convert to float32 and normalize
             audio_float = audio_np.astype(np.float32)
             audio_float /= np.max(np.abs(audio_float)) + 1e-6  # avoid division by zero
@@ -103,40 +111,51 @@ async def audio_to_numpy(file: bytes = File(...)):
             audio_np = (audio_resampled * 32767).astype(np.int16)
             sampling_rate = 16000
 
-        print(f"[+] Final Audio Shape: {audio_np.shape}, Dtype: {audio_np.dtype}")
+        # print(f"[+] Final Audio Shape: {audio_np.shape}, Dtype: {audio_np.dtype}")
 
         # Now safe to proceed with your pipeline
-        am_result = check_am(file)
 
-        transcript = await transcript_generator(wave=audio_np, sampling_rate=16000)
+        am_result = check_am(file,request_id=request_id)
+
+        transcript = await transcript_generator(wave=audio_np, sampling_rate=16000,request_id=request_id)
         txt = filter_hal(transcript[1])
 
         if len(txt) <= 1 and helping_asr:
+            print(f"[*] - {request_id} Fallback to Helping ASR for transcription")
             txt = await helping_asr.transcribe_audio_array(audio_array=audio_np)
 
-        print(f'[+] Transcript Sending {txt if len(txt) > 3 else "Nothing"}')
+        print(f'[*] - {request_id} Transcript: {txt if len(txt) > 2 else ""}')
         return {"message": "Conversion successful", "transcript": txt, "am_result": am_result}
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        error_traceback = traceback.format_exc()
+        print(f'[*] - {request_id} Err Code: 400 Exception occurred: {error_traceback}')
+        raise HTTPException(status_code=400, detail=str(error_traceback))
     
 @app.post("/transcribe_array")
-async def audio_to_numpy(file: bytes = File(...)):
+async def audio_to_numpy(file: bytes = File(...), request_id: str = ""):
     try:
-        am_result = check_am(file)
+        if len(request_id) < 1:
+            request_id = generate_random_id()
+        
+        am_result = check_am(file,request_id=request_id)
         audio_np = np.frombuffer(file, dtype=np.int16)
-        print('Wave type init',audio_np)
-        transcript = await transcript_generator(wave=audio_np, sampling_rate=16000)
-        txt = filter_hal(transcript[1])
+        # print('Wave type init',audio_np)
 
+        transcript = await transcript_generator(wave=audio_np, sampling_rate=16000,request_id=request_id)
+        txt = filter_hal(transcript[1])
+        
         if len(txt)<=1 and helping_asr:
+            print(f"[*] - {request_id} Fallback to Helping ASR for transcription")
             txt = await helping_asr.transcribe_audio_array(audio_array=audio_np)
 
         
-        print(f'[+] Transcript Sending {txt if len(txt) > 3 else "Nothing"}')
+        print(f'[*] - {request_id} Transcript: {txt if len(txt) > 2 else ""}') 
         return {"message": "Conversion successful", "transcript": txt, "am_result": am_result}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        error_traceback = traceback.format_exc()
+        print(f'[*] - {request_id} Err Code: 400 Exception occurred: {error_traceback}')
+        raise HTTPException(status_code=400, detail=str(error_traceback))
 
 @app.post("/transcribe", response_model=TranscriptionResponse)
 async def transcribe_audio(audio_file: UploadFile = File(...), language: Optional[str] = "en"):

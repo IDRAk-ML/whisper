@@ -156,7 +156,7 @@ class ASRClient:
         
         results = transcribe_audio(file_path=audio_path)
         text = results["text"]
-
+        
         text  = hal_check(text)
         return text
     
@@ -287,7 +287,7 @@ class ASRClient:
             return ""  # Return empty string if transcript is not found
         elif selected_model == 'whisper_at':
             result_at = self.send_audio_to_whisper_at(audio_path=audio_path)
-            print('Result of AT',result_at)
+            # print('Result of AT',result_at)
             return result_at
         
         else:

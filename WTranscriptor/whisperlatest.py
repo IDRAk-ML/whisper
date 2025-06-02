@@ -141,10 +141,10 @@ class WhisperTranscriptorAPI:
 
             speech_timestamps = self.get_speech_timestamps(wave, self.vad_model, sampling_rate=16000,threshold=0.35,
                                                            min_silence_duration_ms=100,min_speech_duration_ms=100)
-            # speech_timestamps = True
+            speech_timestamps = False
         else:
             speech_timestamps = True
-        print('vad',enable_vad,speech_timestamps)
+        # print('vad',enable_vad,speech_timestamps)
         if speech_timestamps:
             if enable_vad:
                 wave1 = self.collect_chunks(speech_timestamps, wave)
@@ -163,11 +163,10 @@ class WhisperTranscriptorAPI:
             return_timestamps=False
                  )
             transcription = filter_hallucination(outputs['text'])
-            print(transcription)
+            # print(transcription)
             t2 = timeit.default_timer()
-            print('Time taking for response',t2-t1)
-            print('Audio Length',len(wave)/16000)
-
+            # print('Time taking for response',t2-t1)
+            # print('Audio Length',len(wave)/16000)
             return transcription,[]
         else:
             # adding sense voice here
