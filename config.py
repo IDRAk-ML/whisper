@@ -41,7 +41,7 @@ config['model_path'] = BASE_PATH + config['model_path']
 
 HELPING_ASR_FLAG = True
 HELPING_ASR_MODEL = {'model_list':['whisper_at','sensevoice'],'selected_model':0}
-SMART_AM_CHECK = os.getenv('SMART_AM_CHECK',"ON")
+SMART_AM_CHECK = os.getenv('SMART_AM_CHECK',"OFF")
 SMART_AM_CHECK = str_to_bool(SMART_AM_CHECK)
 
 
