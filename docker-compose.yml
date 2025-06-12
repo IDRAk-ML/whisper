@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   whisper-fastapi:
-    image: 214882929820.dkr.ecr.us-east-1.amazonaws.com/v5-lines/whisper-fastapi:v1.0.0
+    image: 214882929820.dkr.ecr.us-east-1.amazonaws.com/v5-lines/whisper-fastapi:v1.0.6
     ports:
       - "9005:9005"
     volumes:
@@ -21,8 +21,9 @@ services:
       WHISPER_AT_ADDRESS: "5.9.36.98:9007"             # e.g. "127.0.0.1:9000" if needed
       AMD_SERVER_ADDRESS: "5.9.36.98:8034"
       SMART_AM_CHECK: "ON"               # "ON" or "OFF"
-      MODEL_NAME: "whisper-medium.en"    # or "whisper-large-v3" "whisper-medium.en"
+      MODEL_NAME: "whisper-medium.en"    # or "whisper-large-v3" "whisper-medium.en" "whisper-large-v3-turbo"
       UVICORN_WORKERS: 1
+      VAD_TH: 0.3
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9005/health"]
       interval: 30s
