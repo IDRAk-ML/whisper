@@ -9,7 +9,7 @@ import librosa
 from fastapi import status
 import soundfile as sf
 import requests
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException, UploadFile, File
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException, UploadFile, File,Form
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from WTranscriptor.utils.utils import *
@@ -88,6 +88,47 @@ def check_am(file_audio: bytes,request_id='') -> bool:
     data = {"beep_results":(False,[]),"match_detected":False}
     
     return False  # Placeholder for external request logic
+
+@app.post("/transcribe/", response_class=JSONResponse)
+async def transcribe_audio(
+    file: UploadFile = File(...),
+    audio_tagging_time_resolution: Optional[int] = Form(4.0),
+    temperature: Optional[float] = Form(0.01),
+    no_speech_threshold: Optional[float] = Form(0.4)
+):
+    try:
+        contents = await file.read()
+        audio_np, sampling_rate = sf.read(io.BytesIO(contents), dtype='int16')
+
+        if sampling_rate != 16000:
+            print(f"[*] - Original SR: {sampling_rate}, resampling to 16000 Hz")
+            audio_float = audio_np.astype(np.float32)
+            audio_float /= np.max(np.abs(audio_float)) + 1e-6  # avoid division by zero
+            audio_resampled = librosa.resample(audio_float, orig_sr=sampling_rate, target_sr=16000)
+            audio_np = (audio_resampled * 32767).astype(np.int16)
+            sampling_rate = 16000
+
+        transcript = await transcript_generator(wave=audio_np, sampling_rate=sampling_rate)
+        txt = filter_hal(transcript[1])
+
+        if len(txt) <= 1 and helping_asr:
+            print("Fallback to Helping ASR for transcription")
+            txt = await helping_asr.transcribe_audio_array(audio_array=audio_np)
+
+        print(f'Transcript: {txt if len(txt) > 2 else ""}')
+        return JSONResponse(
+            content={
+                "message": "Conversion successful",
+                "text": txt,
+                "am_result": None
+            },
+            status_code=status.HTTP_200_OK
+        )
+    
+    except Exception as e:
+        error_traceback = traceback.format_exc()
+        print(f'Err Code: 400 Exception occurred: {error_traceback}')
+        raise HTTPException(status_code=400, detail=str(error_traceback))
 
 @app.post("/transcribe_array1")
 async def audio_to_numpy(file: bytes = File(...),request_id =  ""):
