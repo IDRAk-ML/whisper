@@ -89,13 +89,11 @@ def check_am(file_audio: bytes,request_id='') -> bool:
     
     return False  # Placeholder for external request logic
 
-@app.post("/transcribe/", response_class=JSONResponse)
+@app.post("/transcribe/")
 async def transcribe_audio(
-    file: UploadFile = File(...),
-    audio_tagging_time_resolution: Optional[int] = Form(4.0),
-    temperature: Optional[float] = Form(0.01),
-    no_speech_threshold: Optional[float] = Form(0.4)
+    file: UploadFile = File(...)
 ):
+    print('Code by Ali')
     try:
         contents = await file.read()
         audio_np, sampling_rate = sf.read(io.BytesIO(contents), dtype='int16')
@@ -116,14 +114,11 @@ async def transcribe_audio(
             txt = await helping_asr.transcribe_audio_array(audio_array=audio_np)
 
         print(f'Transcript: {txt if len(txt) > 2 else ""}')
-        return JSONResponse(
-            content={
+        return {
                 "message": "Conversion successful",
                 "text": txt,
                 "am_result": None
-            },
-            status_code=status.HTTP_200_OK
-        )
+    }
     
     except Exception as e:
         error_traceback = traceback.format_exc()
